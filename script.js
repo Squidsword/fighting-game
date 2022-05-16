@@ -7,12 +7,14 @@ canvas.height = 576;
 c.fillRect(0,0, canvas.width, canvas.height)
 
 const gravity = 0.3;
+const fighters = [];
 class Sprite {
-    constructor({position, velocity, size, color}) {
+    constructor({position, velocity, size, color, name}) {
         this.position = position;
         this.velocity = velocity;
         this.size = size;
         this.color = color;
+        this.name = name;
 
         this.maxHealth = 100;
         this.health = this.maxHealth;
@@ -27,16 +29,23 @@ class Sprite {
             size: {
                 w: 100,
                 h: 50
-            }
+            },
+            enemiesHit: []
         }
+        console.log(fighters)
+        console.log(this)
+        fighters.push(this);
+        console.log(fighters)
     }
 
     draw() {
         c.fillStyle = this.color;
         c.fillRect(this.position.x, this.position.y, this.size.w, this.size.h);
 
-        c.fillStyle = 'green'
-        c.fillRect(this.attackBox.position.x, this.attackBox.position.y, this.attackBox.size.w, this.attackBox.size.h);
+        if (this.isAttacking) {
+            c.fillStyle = 'green'
+            c.fillRect(this.attackBox.position.x, this.attackBox.position.y, this.attackBox.size.w, this.attackBox.size.h);
+        }
     }
 
     update() {
@@ -94,26 +103,32 @@ class Sprite {
         this.isAttacking = true;
         setTimeout(() => {
             this.isAttacking = false;
+            this.attackBox.enemiesHit = [];
         }, 100);
-        if (checkCollision(player.attackBox, enemy)) {
-            enemy.health -= 10;
-            if (enemy.health < 0) {
-                enemy.health = 0;
-            }
-        }
     }
 }
 
 function checkCollision(object1, object2) {
-    horizontalCollision = object1.position.x + object1.size.w > object2.position.x &&
+    var horizontalCollision = object1.position.x + object1.size.w > object2.position.x &&
     object1.position.x < object2.position.x + object2.size.w;
 
-    verticalCollision = object1.position.y + object1.size.h > object2.position.y &&
+    var verticalCollision = object1.position.y + object1.size.h > object2.position.y &&
     object1.position.y < object2.position.y + object2.size.h;
     
     if (horizontalCollision && verticalCollision) {
         return true;
     }
+}
+
+function checkHits(fighter) {
+    var collisions = [];
+    var opponents = getOpponents(fighter);
+    for (opponent in opponents) {
+        if (fighter.isAttacking && checkCollision(fighter.attackBox, opponents[opponent])) {
+            collisions.push(opponents[opponent]);
+        }
+    }
+    return collisions;
 }
 
 const player = new Sprite({
@@ -130,7 +145,8 @@ const player = new Sprite({
         h:150,
         w:50
     },
-    color:'blue'
+    color:'blue',
+    name: 'player'
 });
 
 const enemy = new Sprite({
@@ -146,7 +162,8 @@ const enemy = new Sprite({
         h:150,
         w:50
     },
-    color:'red'
+    color:'red',
+    name: 'enemy'
 })
 
 function animate() {
@@ -156,6 +173,8 @@ function animate() {
     player.update();
     enemy.update();
 
+    player.velocity.x = 0;
+    enemy.velocity.x = 0;
     for (property in keys) {
         if (keys[property]['behavior']['type'] === 'justPressed') {
             if(keys[property]['justPressed']) {
@@ -163,20 +182,38 @@ function animate() {
             }
         } else {
             if(keys[property]['pressed']) {
-                console.log(property + " pressed")
                 keys[property]['behavior']['func']();
             }
         }
     }
 
-    if (checkCollision(player.attackBox, enemy)) {
-        console.log("collision")
+    for (user in fighters) {
+        var hitEnemies = checkHits(fighters[user]);
+        for (enemyFighter in hitEnemies) {
+            if (!fighters[user].attackBox.enemiesHit.includes(hitEnemies[enemyFighter])) {
+                hitEnemies[enemyFighter].health -= 10;
+                if (hitEnemies[enemyFighter].health < 0) {
+                    hitEnemies[enemyFighter].health = 0;
+                }
+                fighters[user].attackBox.enemiesHit.push(hitEnemies[enemyFighter])
+                console.log(hitEnemies[enemyFighter].name + " was hit")
+            }
+            
+        }
     }
 
     resetJustPressed();
 }
 
-
+function getOpponents(fighterPlayer) {
+    var opponents = [];
+    for (fighter in fighters) {
+        if (fighters[fighter] !== fighterPlayer) {
+            opponents.push(fighters[fighter]);
+        }
+    }
+    return opponents;
+}
 
 const keys = {
     w: {
@@ -280,7 +317,5 @@ function resetJustPressed() {
         keys[property]['justPressed'] = false;
     }
 }
-
-
 
 animate();
