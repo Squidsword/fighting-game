@@ -15,9 +15,12 @@ class Sprite {
         this.color = color;
 
         this.maxHealth = 100;
+        this.health = this.maxHealth;
+
         this.maxJumps = 2;
         this.hasFastFall = true;
-        this.jumps = 2;
+        this.jumps = this.maxJumps;
+        this.isAttacking = false;
 
         this.attackBox = {
             position: this.position,
@@ -63,6 +66,14 @@ class Sprite {
         this.draw();
     }
 
+    moveLeft() {
+        this.velocity.x = -2;
+    }
+
+    moveRight() {
+        this.velocity.x = 2;
+    }
+
     jump() {
         if (this.jumps > 0) {
             this.velocity.y = -10;
@@ -73,6 +84,22 @@ class Sprite {
         if (this.hasFastFall) {
             this.velocity.y = Math.max(5, this.velocity.y -= 5);
             this.hasFastFall = false;
+        }
+    }
+
+    attack() {
+        if (this.isAttacking) {
+            return;
+        }
+        this.isAttacking = true;
+        setTimeout(() => {
+            this.isAttacking = false;
+        }, 100);
+        if (checkCollision(player.attackBox, enemy)) {
+            enemy.health -= 10;
+            if (enemy.health < 0) {
+                enemy.health = 0;
+            }
         }
     }
 }
@@ -129,26 +156,17 @@ function animate() {
     player.update();
     enemy.update();
 
-    player.velocity.x = 0;
-    if (keys.w.justPressed) {
-        player.jump();
-    } else if (keys.a.pressed) {
-        player.velocity.x = -2;
-    } else if (keys.s.justPressed) {
-        player.fastFall();
-    } else if (keys.d.pressed) {
-        player.velocity.x = 2;
-    }
-
-    enemy.velocity.x = 0;
-    if (keys.i.justPressed) {
-        enemy.jump();
-    } else if (keys.j.pressed) {
-        enemy.velocity.x = -2;
-    } else if (keys.k.justPressed) {
-        enemy.fastFall();
-    } else if (keys.l.pressed) {
-        enemy.velocity.x = 2;
+    for (property in keys) {
+        if (keys[property]['behavior']['type'] === 'justPressed') {
+            if(keys[property]['justPressed']) {
+                keys[property]['behavior']['func']();
+            }
+        } else {
+            if(keys[property]['pressed']) {
+                console.log(property + " pressed")
+                keys[property]['behavior']['func']();
+            }
+        }
     }
 
     if (checkCollision(player.attackBox, enemy)) {
@@ -158,39 +176,80 @@ function animate() {
     resetJustPressed();
 }
 
+
+
 const keys = {
     w: {
         justPressed: false,
-        pressed: false
+        pressed: false,
+        behavior: {type:'justPressed', func: function() {
+            player.jump();
+        }}
     },
     a: {
         justPressed: false,
-        pressed: false
+        pressed: false,
+        behavior: {type:'pressed', func: function() {
+            player.moveLeft();
+        }}
     },
     s: {
         justPressed: false,
-        pressed: false
+        pressed: false,
+        behavior: {type:'justPressed', func: function() {
+            player.fastFall();
+        }}
     },
     d: {
         justPressed: false,
-        pressed: false
+        pressed: false,
+        behavior: {type:'pressed', func: function() {
+            player.moveRight();
+        }}
+    },
+    f: {
+        justPressed:false,
+        pressed: false,
+        behavior: {type:'justPressed', func: function() {
+            player.attack();
+        }}
     },
 
     i: {
         justPressed: false,
-        pressed: false
+        pressed: false,
+        behavior: {type:'justPressed', func: function() {
+            enemy.jump();
+        }}
     },
     j: {
         justPressed: false,
-        pressed: false
+        pressed: false,
+        behavior: {type:'pressed', func: function() {
+            enemy.moveLeft();
+        }}
     },
+    
     k: {
         justPressed: false,
-        pressed: false
+        pressed: false,
+        behavior: {type:'justPressed', func: function() {
+            enemy.fastFall();
+        }}
     },
     l: {
         justPressed: false,
-        pressed: false
+        pressed: false,
+        behavior: {type:'pressed', func: function() {
+            enemy.moveRight();
+        }}
+    },
+    h: {
+        justPressed: false,
+        pressed: false,
+        behavior: {type:'justPressed', func: function() {
+            enemy.attack();
+        }}
     }
 }
 
