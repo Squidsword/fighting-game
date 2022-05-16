@@ -10,11 +10,12 @@ const gravity = 0.3;
 const fighters = [];
 
 class Fighter {
-    constructor({position = 0, velocity = 0, size = {h: 150, w:50}, color = 'red', name = 'anonymous', offset = {x: 20, y:30}}) {
+    constructor({position = 0, velocity = 0, size = {h: 150, w:50}, color = 'red', damagedColor = 'white', name = 'anonymous', offset = {x: 20, y:30}, facingLeft = false}) {
         this.position = position;
         this.velocity = velocity;
         this.size = size;
         this.color = color;
+        this.damagedColor = damagedColor;
         this.name = name;
 
         this.isAlive = true;
@@ -26,7 +27,7 @@ class Fighter {
         this.jumps = this.maxJumps;
         this.isAttacking = false;
         this.knockbacked = false;
-        this.facingLeft = false;
+        this.facingLeft = facingLeft;
 
         this.attackBox = {
             offset: {
@@ -50,9 +51,13 @@ class Fighter {
     }
 
     draw() {
-        c.fillStyle = this.color;
+
+        if (this.knockbacked) {
+            c.fillStyle = this.damagedColor;
+        } else {
+            c.fillStyle = this.color
+        }
         c.fillRect(this.position.x, this.position.y, this.size.w, this.size.h);
-        
         if (this.isAttacking) {
             c.fillStyle = 'green'
             c.fillRect(this.attackBox.position.x, this.attackBox.position.y, this.attackBox.size.w, this.attackBox.size.h);
@@ -238,7 +243,8 @@ const enemy = new Fighter({
         y: 30
     },
     color:'red',
-    name: 'enemy'
+    name: 'enemy',
+    facingLeft: true
 })
 
 function animate() {
