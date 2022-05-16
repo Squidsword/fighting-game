@@ -123,7 +123,7 @@ class Fighter {
         }
     }
     fastFall() {
-        if (this.hasFastFall && this.hasControl()) {
+        if (this.hasFastFall && this.isAlive) {
             this.velocity.y = Math.max(5, this.velocity.y -= 5);
             this.hasFastFall = false;
             this.knockbacked = false;
