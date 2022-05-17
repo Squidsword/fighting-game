@@ -301,6 +301,7 @@ function animate() {
 }
 
 function handleKeys() {
+
     for (property in keys) {
         for (behavior in keys[property]['behaviors']) {
             if (keys[property]['behaviors'][behavior]['type'] === 'justPressed') {
@@ -311,10 +312,14 @@ function handleKeys() {
                 if(keys[property]['pressed']) {
                     keys[property]['behaviors'][behavior]['func']();
                 }
+            } else if (keys[property]['behaviors'][behavior]['type'] === 'xpressed') {
+                if(keys[property]['pressed'] && !keys[property]['justPressed']) {
+                    keys[property]['behaviors'][behavior]['func']();
+                }
             }
         }
-
     }
+
 }
 
 function handleHits() {
@@ -357,7 +362,7 @@ const keys = {
             }
         },
         {
-            type:'pressed', 
+            type:'xpressed', 
             func: function() {
                 player.spamJump();
             }
