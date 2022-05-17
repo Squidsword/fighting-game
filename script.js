@@ -8,6 +8,8 @@ c.fillRect(0,0, canvas.width, canvas.height)
 
 const gravity = 0.3;
 const fighters = [];
+const timer = new Date();
+
 
 class Fighter {
     constructor({position = 0, velocity = 0, size = {h: 150, w:50}, color = 'red', damagedColor = 'white', name = 'anonymous', offset = {x: 20, y:30}, facingLeft = false}) {
@@ -54,6 +56,8 @@ class Fighter {
 
         if (this.knockbacked) {
             c.fillStyle = this.damagedColor;
+        } else if (!this.isAlive) {
+            c.fillStyle = 'gray'
         } else {
             c.fillStyle = this.color
         }
@@ -74,7 +78,7 @@ class Fighter {
         } else {
             this.position.x += this.velocity.x;
             if (this.touchingFloor()) {
-                this.velocity.x *= 0.9
+                this.velocity.x *= 0.93
             }
         }
 
@@ -90,6 +94,9 @@ class Fighter {
         } else {
             this.position.y += this.velocity.y;
             this.velocity.y += gravity
+            if (this.touchingWall()) {
+                this.velocity.y = Math.min(this.velocity.y, 1.5);
+            }
         }
         this.attackBox.position.x = this.position.x + this.attackBox.offset.x
         this.attackBox.position.y = this.position.y + this.attackBox.offset.y
@@ -116,6 +123,10 @@ class Fighter {
         return this.position.y + this.size.h >= canvas.height;
     }
 
+    touchingWall() {
+        return this.position.x <= 0 || this.position.x + this.size.w >= canvas.width;
+    }
+
     jump() {
         if (this.jumps > 0 && this.hasControl()) {
             this.velocity.y = -10;
@@ -135,11 +146,11 @@ class Fighter {
             return;
         }
         this.updateAttackBox();
+        this.isAttacking = true;
         setTimeout(() => {
             this.isAttacking = false;
             this.attackBox.enemiesHit = [];
         }, 100);
-        this.isAttacking = true;
     }
 
     updateAttackBox() {
@@ -163,6 +174,11 @@ class Fighter {
         }
     }
 
+    updateHealth() {
+        var fighterHealth = document.getElementById(`${this.name}Health`)
+        fighterHealth.style.width = `${this.health / this.maxHealth * 100}%`
+    }
+
     die() {
         if (this.isAlive = true) {
             this.isAlive = false
@@ -177,6 +193,7 @@ class Fighter {
         this.knockbacked = true;
         this.velocity.y -= 8;
         this.velocity.x = source*3;
+        this.updateHealth();
         if (this.health <= 0) {
             this.health = 0
             this.die()
@@ -336,14 +353,14 @@ const keys = {
         }}
     },
 
-    i: {
+    p: {
         justPressed: false,
         pressed: false,
         behavior: {type:'justPressed', func: function() {
             enemy.jump();
         }}
     },
-    j: {
+    l: {
         justPressed: false,
         pressed: false,
         behavior: {type:'pressed', func: function() {
@@ -351,21 +368,21 @@ const keys = {
         }}
     },
     
-    k: {
+    ';': {
         justPressed: false,
         pressed: false,
         behavior: {type:'justPressed', func: function() {
             enemy.fastFall();
         }}
     },
-    l: {
+    '\'': {
         justPressed: false,
         pressed: false,
         behavior: {type:'pressed', func: function() {
             enemy.moveRight();
         }}
     },
-    h: {
+    k: {
         justPressed: false,
         pressed: false,
         behavior: {type:'justPressed', func: function() {
@@ -377,10 +394,10 @@ const keys = {
 window.addEventListener('keydown', (event) => {
     console.log(event);
     try {
-        keys[event.key].pressed = true;
-        keys[event.key].justPressed = !event.repeat;
+        keys[event.key.toLowerCase()].pressed = true;
+        keys[event.key.toLowerCase()].justPressed = !event.repeat;
     } catch {
-        
+        console.log("key not binded")
     }
     for (property in keys) {
         console.log(`${property}:${keys[String(property)]['pressed']} ${keys[String(property)]['justPressed']}`);
@@ -389,8 +406,8 @@ window.addEventListener('keydown', (event) => {
 
 window.addEventListener('keyup', (event) => {
     try {
-        keys[event.key].pressed = false;
-        keys[event.key].justPressed = false;
+        keys[event.key.toLowerCase()].pressed = false;
+        keys[event.key.toLowerCase()].justPressed = false;
     } catch {
         
     }
