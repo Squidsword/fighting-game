@@ -2,7 +2,7 @@ const canvas = document.querySelector('canvas');
 const c = canvas.getContext('2d');
 
 canvas.width = 1024;
-canvas.height = 576;
+canvas.height = 526;
 
 c.fillRect(0,0, canvas.width, canvas.height)
 
@@ -79,6 +79,8 @@ class Fighter {
             this.position.x += this.velocity.x;
             if (this.touchingFloor()) {
                 this.velocity.x *= 0.93
+            } else {
+                this.velocity.x *= 0.99
             }
         }
 
@@ -90,7 +92,7 @@ class Fighter {
             this.knockbacked = false;
         } else if(this.position.y + this.velocity.y < 0) {
             this.position.y = Math.abs(this.position.y + this.velocity.y)
-            this.velocity.y *= -0.618
+            this.velocity.y *= -0.312
         } else {
             this.position.y += this.velocity.y;
             this.velocity.y += gravity
@@ -133,6 +135,13 @@ class Fighter {
             this.jumps--;
         }
     }
+
+    spamJump() {
+        if (this.position.y + this.size.h === canvas.height) {
+            this.jump();
+        }
+    }
+
     fastFall() {
         if (this.hasFastFall && this.isAlive) {
             this.velocity.y = Math.max(5, this.velocity.y -= 5);
@@ -151,6 +160,20 @@ class Fighter {
             this.isAttacking = false;
             this.attackBox.enemiesHit = [];
         }, 100);
+    }
+
+    dash() {
+        if (this.velocity.x > 0) {
+            this.velocity.x += 10;
+        } else if (this.velocity.x < 0) {
+            this.velocity.x -= 10;
+        } else {
+            if (!this.facingLeft) {
+                this.velocity += 10;
+            } else {
+                this.velocity -= 10;
+            }
+        }
     }
 
     updateAttackBox() {
@@ -279,15 +302,18 @@ function animate() {
 
 function handleKeys() {
     for (property in keys) {
-        if (keys[property]['behavior']['type'] === 'justPressed') {
-            if(keys[property]['justPressed']) {
-                keys[property]['behavior']['func']();
-            }
-        } else {
-            if(keys[property]['pressed']) {
-                keys[property]['behavior']['func']();
+        for (behavior in keys[property]['behaviors']) {
+            if (keys[property]['behaviors'][behavior]['type'] === 'justPressed') {
+                if(keys[property]['justPressed']) {
+                    keys[property]['behaviors'][behavior]['func']();
+                }
+            } else if (keys[property]['behaviors'][behavior]['type'] === 'pressed'){
+                if(keys[property]['pressed']) {
+                    keys[property]['behaviors'][behavior]['func']();
+                }
             }
         }
+
     }
 }
 
@@ -316,86 +342,113 @@ function getOpponents(fighterPlayer) {
     return opponents;
 }
 
+function getKeyByValue(object, value) {
+    return Object.keys(object).find(key => object[key] === value);
+}
+
 const keys = {
-    w: {
+    KeyW: {
         justPressed: false,
         pressed: false,
-        behavior: {type:'justPressed', func: function() {
-            player.jump();
-        }}
+        behaviors: [{
+            type:'justPressed',
+            func: function() {
+                player.jump();
+            }
+        },
+        {
+            type:'pressed', 
+            func: function() {
+                player.spamJump();
+            }
+        }]
     },
-    a: {
+    KeyA: {
         justPressed: false,
         pressed: false,
-        behavior: {type:'pressed', func: function() {
+        behaviors: [{type:'pressed', func: function() {
             player.moveLeft();
-        }}
+        }}]
     },
-    s: {
+    KeyS: {
         justPressed: false,
         pressed: false,
-        behavior: {type:'justPressed', func: function() {
+        behaviors: [{type:'justPressed', func: function() {
             player.fastFall();
-        }}
+        }}]
     },
-    d: {
+    KeyD: {
         justPressed: false,
         pressed: false,
-        behavior: {type:'pressed', func: function() {
+        behaviors: [{type:'pressed', func: function() {
             player.moveRight();
-        }}
+        }}]
     },
-    f: {
+    KeyF: {
         justPressed:false,
         pressed: false,
-        behavior: {type:'justPressed', func: function() {
+        behaviors: [{type:'justPressed', func: function() {
             player.attack();
-        }}
+        }}]
+    },
+    ShiftLeft: {
+        justPressed: false,
+        pressed: false,
+        behaviors: [{type:'justPressed', func: function() {
+            player.dash();
+        }}]
     },
 
-    p: {
+    KeyP: {
         justPressed: false,
         pressed: false,
-        behavior: {type:'justPressed', func: function() {
+        behaviors: [{type:'justPressed', func: function() {
             enemy.jump();
-        }}
+        }}]
     },
-    l: {
+    KeyL: {
         justPressed: false,
         pressed: false,
-        behavior: {type:'pressed', func: function() {
+        behaviors: [{type:'pressed', func: function() {
             enemy.moveLeft();
-        }}
+        }}]
     },
     
-    ';': {
+    Semicolon: {
         justPressed: false,
         pressed: false,
-        behavior: {type:'justPressed', func: function() {
+        behaviors: [{type:'justPressed', func: function() {
             enemy.fastFall();
-        }}
+        }}]
     },
-    '\'': {
+    Quote: {
         justPressed: false,
         pressed: false,
-        behavior: {type:'pressed', func: function() {
+        behaviors: [{type:'pressed', func: function() {
             enemy.moveRight();
-        }}
+        }}]
     },
-    k: {
+    KeyK: {
         justPressed: false,
         pressed: false,
-        behavior: {type:'justPressed', func: function() {
+        behaviors: [{type:'justPressed', func: function() {
             enemy.attack();
-        }}
+        }}]
+    },
+    ShiftRight: {
+        justPressed: false,
+        pressed: false,
+        behaviors: [{type:'justPressed', func: function() {
+            enemy.dash();
+        }}]
     }
 }
 
 window.addEventListener('keydown', (event) => {
     console.log(event);
     try {
-        keys[event.key.toLowerCase()].pressed = true;
-        keys[event.key.toLowerCase()].justPressed = !event.repeat;
+        keys[event.code].pressed = true;
+        keys[event.code].justPressed = !event.repeat;
     } catch {
         console.log("key not binded")
     }
@@ -406,8 +459,8 @@ window.addEventListener('keydown', (event) => {
 
 window.addEventListener('keyup', (event) => {
     try {
-        keys[event.key.toLowerCase()].pressed = false;
-        keys[event.key.toLowerCase()].justPressed = false;
+        keys[event.code].pressed = false;
+        keys[event.code].justPressed = false;
     } catch {
         
     }
