@@ -12,7 +12,7 @@ const timer = new Date();
 
 
 class Fighter {
-    constructor({position = 0, velocity = 0, size = {h: 150, w:50}, color = 'red', damagedColor = 'white', name = 'anonymous', offset = {x: 20, y:30}, facingLeft = false}) {
+    constructor({position = 0, velocity = 0, size = {h: 150, w:50}, color = 'red', damagedColor = 'white', name = 'anonymous', offset = {x: 20, y:30}}) {
         this.position = position;
         this.velocity = velocity;
         this.size = size;
@@ -26,10 +26,15 @@ class Fighter {
 
         this.maxJumps = 2;
         this.hasFastFall = true;
+        this.hasDash = true;
         this.jumps = this.maxJumps;
         this.isAttacking = false;
         this.knockbacked = false;
-        this.facingLeft = facingLeft;
+        this.enemyLeft = false;
+
+        this.speed = 2;
+
+        this.facingLeft = false;
 
         this.attackBox = {
             offset: {
@@ -79,8 +84,6 @@ class Fighter {
             this.position.x += this.velocity.x;
             if (this.touchingFloor()) {
                 this.velocity.x *= 0.93
-            } else {
-                this.velocity.x *= 0.99
             }
         }
 
@@ -106,19 +109,21 @@ class Fighter {
     }
 
     hasControl() {
-        return this.isAlive && !this.knockbacked && Math.abs(this.velocity.x) <= 2
+        return this.isAlive && !this.knockbacked && Math.abs(this.velocity.x) <= this.speed
     }
 
     moveLeft() {
         if (this.hasControl()) {
-            this.velocity.x = -2;
+            this.velocity.x = -this.speed;
         }
+        this.facingLeft = true;
     }
 
     moveRight() {
         if (this.hasControl()) {
-            this.velocity.x = 2;
+            this.velocity.x = this.speed;
         }
+        this.facingLeft = false;
     }
 
     touchingFloor() {
@@ -129,9 +134,19 @@ class Fighter {
         return this.position.x <= 0 || this.position.x + this.size.w >= canvas.width;
     }
 
+    isAirborne() {
+        return !this.touchingFloor && !this.touchingWall
+    }
+
     jump() {
         if (this.jumps > 0 && this.hasControl()) {
-            this.velocity.y = -10;
+            if (this.touchingWall() && !this.touchingFloor()) {
+                this.velocity.x *= 2.5;
+                this.velocity.y = -8;
+            } else {
+                this.velocity.y = -10;
+            }
+
             this.jumps--;
         }
     }
@@ -163,17 +178,23 @@ class Fighter {
     }
 
     dash() {
-        if (this.velocity.x > 0) {
-            this.velocity.x += 10;
-        } else if (this.velocity.x < 0) {
+        if (!this.hasDash) {
+            return;
+        }
+        if (this.facingLeft) {
             this.velocity.x -= 10;
         } else {
-            if (!this.facingLeft) {
-                this.velocity += 10;
-            } else {
-                this.velocity -= 10;
-            }
+            this.velocity.x += 10;
         }
+        this.hasDash = false;
+        setTimeout(() => {
+            if(this.isAirborne) {
+                this.velocity.x *= 0.2
+            }
+        }, 75)
+        setTimeout(() => {
+            this.hasDash = true;
+        }, 750);
     }
 
     updateAttackBox() {
@@ -188,11 +209,13 @@ class Fighter {
                 rightEnemies++;
             }
         }
-        var oldFacing = this.facingLeft;
-        this.facingLeft = leftEnemies > rightEnemies;
-        if (this.facingLeft && oldFacing != this.facingLeft) {
+        if (this.enemyLeft == leftEnemies > rightEnemies) {
+            return;
+        }
+        this.enemyLeft = leftEnemies > rightEnemies;
+        if (this.enemyLeft) {
             this.attackBox.offset.x = (this.attackBox.offset.x * -1) - this.size.w;
-        } else if (!this.facingLeft && oldFacing != this.facingLeft) {
+        } else {
             this.attackBox.offset.x = (this.attackBox.offset.x + this.size.w) * -1;
         }
     }
@@ -203,12 +226,13 @@ class Fighter {
     }
 
     die() {
-        if (this.isAlive = true) {
-            this.isAlive = false
-            var temp = this.size.w;
-            this.size.w = this.size.h;
-            this.size.h = temp;
+        if (!this.isAlive) {
+            return
         }
+        this.isAlive = false
+        var temp = this.size.w;
+        this.size.w = this.size.h;
+        this.size.h = temp;
     }
 
     receiveDamage(damage, source) {
@@ -278,13 +302,8 @@ const enemy = new Fighter({
         h:150,
         w:50
     },
-    offset: {
-        x: -70,
-        y: 30
-    },
     color:'red',
     name: 'enemy',
-    facingLeft: true
 })
 
 function animate() {
