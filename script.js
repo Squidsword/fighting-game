@@ -86,6 +86,7 @@ class Fighter {
             this.velocity.x = -0.75 * this.velocity.x;
         } else {
             this.position.x += this.velocity.x;
+            this.updateVelocityText();
             if (this.touchingFloor()) {
                 this.velocity.x *= this.friction;
                 this.jumps = this.maxJumps;
@@ -174,16 +175,46 @@ class Fighter {
         clearTimeout(this.comboExpireTimer);
         this.combo++;
         this.speed = Math.max(this.baseSpeed + 0.5, this.speed + 0.5);
+        this.updateComboText();
+        this.updateSpeedText();
         console.log(`${this.name} speed: ${this.speed}`)
         this.comboExpireTimer = setTimeout(() => {
             this.resetCombo();
-        }, 1000);
+        }, 750);
+    }
+
+    updateComboText() {
+        try {
+            var combo = document.getElementById(`${this.name}Combo`);
+            combo.textContent = `Combo: ${this.combo}`;
+        } catch {
+            console.log("combotext not found");
+        }
+    }
+
+    updateSpeedText() {
+        try {
+            var speed = document.getElementById(`${this.name}Speed`);
+            speed.textContent = `Run Speed: ${this.speed.toFixed(2)}`;
+        } catch {
+            console.log("combotext not found");
+        }
+    }
+
+    updateVelocityText() {
+        try {
+            var velocity = document.getElementById(`${this.name}Velocity`);
+            velocity.textContent = `Velocity: ${Math.abs(this.velocity.x.toFixed(2))}`;
+        } catch {
+            console.log("combotext not found");
+        }
     }
 
     resetCombo() {
         console.log(`${this.name} combo resetting...`)
         clearTimeout(this.comboExpireTimer);
         this.combo = 0;
+        this.updateComboText();
         this.speedReductionTimer = setInterval(() => {
             if (this.speed * 0.9 < this.baseSpeed) {
                 this.speed = this.baseSpeed;
@@ -191,6 +222,7 @@ class Fighter {
             } else {
                 this.speed *= 0.93;
             }
+            this.updateSpeedText();
         }, 50)
     }
 
