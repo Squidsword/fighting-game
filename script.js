@@ -109,7 +109,7 @@ class Fighter {
     }
 
     hasControl() {
-        return this.isAlive && !this.knockbacked && Math.abs(this.velocity.x) <= this.speed
+        return this.isAlive && !this.knockbacked && Math.abs(this.velocity.x) <= this.speed;
     }
 
     moveLeft() {
@@ -150,7 +150,7 @@ class Fighter {
             this.velocity.y = -10;
             this.jumps--;
         }
-    }
+    }   
 
     spamJump() {
         if (this.position.y + this.size.h === canvas.height) {
@@ -427,9 +427,18 @@ const keys = {
     KeyP: {
         justPressed: false,
         pressed: false,
-        behaviors: [{type:'justPressed', func: function() {
-            enemy.jump();
-        }}]
+        behaviors: [{
+            type:'justPressed',
+            func: function() {
+                enemy.jump();
+            }
+        },
+        {
+            type:'xpressed', 
+            func: function() {
+                enemy.spamJump();
+            }
+        }]
     },
     KeyL: {
         justPressed: false,
