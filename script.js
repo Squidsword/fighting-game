@@ -32,7 +32,7 @@ class Fighter {
         this.knockbacked = false;
         this.enemyLeft = false;
 
-        this.speed = 2;
+        this.speed = 3;
 
         this.facingLeft = false;
 
