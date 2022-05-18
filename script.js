@@ -21,7 +21,7 @@ class Fighter {
         this.name = name;
 
         this.isAlive = true;
-        this.maxHealth = 100;
+        this.maxHealth = 250;
         this.health = this.maxHealth;
 
         this.maxJumps = 2;
@@ -33,6 +33,7 @@ class Fighter {
         this.enemyLeft = false;
 
         this.speed = 3;
+        this.gravity = gravity;
 
         this.facingLeft = false;
 
@@ -51,15 +52,13 @@ class Fighter {
             },
             enemiesHit: []
         }
-        console.log(fighters)
-        console.log(this)
+        
         fighters.push(this);
-        console.log(fighters)
     }
 
     draw() {
-
         if (this.knockbacked) {
+            console.log("knockbacked")
             c.fillStyle = this.damagedColor;
         } else if (!this.isAlive) {
             c.fillStyle = 'gray'
@@ -84,6 +83,9 @@ class Fighter {
             this.position.x += this.velocity.x;
             if (this.touchingFloor()) {
                 this.velocity.x *= 0.93
+                this.jumps = this.maxJumps;
+                this.hasFastFall = true;
+                this.knockbacked = false;
             } else {
                 this.velocity.x *= 0.995
             }
@@ -92,9 +94,7 @@ class Fighter {
         if (this.position.y + this.size.h + this.velocity.y > canvas.height) {
             this.position.y = canvas.height - this.size.h;
             this.velocity.y = 0;
-            this.jumps = this.maxJumps;
-            this.hasFastFall = true;
-            this.knockbacked = false;
+
         } else if(this.position.y + this.velocity.y < 0) {
             this.position.y = Math.abs(this.position.y + this.velocity.y)
             this.velocity.y *= -0.312
@@ -162,7 +162,7 @@ class Fighter {
 
     fastFall() {
         if (this.hasFastFall && this.isAlive) {
-            this.velocity.y = Math.max(5, this.velocity.y -= 5);
+            this.velocity.y = Math.max(5, this.velocity.y += 5);
             this.hasFastFall = false;
             this.knockbacked = false;
         }
@@ -190,14 +190,17 @@ class Fighter {
             this.velocity.x += 10;
         }
         this.hasDash = false;
+        this.velocity.y = 0;
+        this.gravity = 0;
         setTimeout(() => {
+            this.gravity = gravity;
             if(this.isAirborne) {
                 this.velocity.x *= 0.2
             }
         }, 75)
         setTimeout(() => {
             this.hasDash = true;
-        }, 750);
+        }, 500);
     }
 
     updateAttackBox() {
@@ -241,6 +244,7 @@ class Fighter {
     receiveDamage(damage, source) {
         this.health -= damage;
         this.knockbacked = true;
+        this.position.y -= 1;
         this.velocity.y -= 8;
         this.velocity.x = source*3;
         this.updateHealth();
