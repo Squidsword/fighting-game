@@ -84,6 +84,8 @@ class Fighter {
             this.position.x += this.velocity.x;
             if (this.touchingFloor()) {
                 this.velocity.x *= 0.93
+            } else {
+                this.velocity.x *= 0.995
             }
         }
 
@@ -135,7 +137,7 @@ class Fighter {
     }
 
     isAirborne() {
-        return !this.touchingFloor && !this.touchingWall
+        return !this.touchingFloor() && !this.touchingWall()
     }
 
     jump() {
@@ -143,9 +145,9 @@ class Fighter {
             this.velocity.x *= 2.5;
             this.velocity.y = -8;
         } else if (this.jumps > 0 && this.isAirborne()) {
+            this.knockbacked = false;
             this.velocity.y = -10;
             this.jumps = 0;
-            this.knockbacked = false;
         } else if (this.jumps > 0 && this.hasControl()) {
             this.velocity.y = -10;
             this.jumps--;
