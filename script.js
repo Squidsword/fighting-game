@@ -87,7 +87,7 @@ class Fighter {
                 this.hasFastFall = true;
                 this.knockbacked = false;
             } else {
-                this.velocity.x *= 0.995
+                this.velocity.x *= 0.998
             }
         }
 
@@ -250,7 +250,17 @@ class Fighter {
         this.knockbacked = true;
         this.position.y -= 1;
         this.velocity.y = -8;
-        this.velocity.x = source*3;
+        var direction;
+        if (source.position.x > this.position.x) {
+            direction = -1
+        } else {
+            direction = 1;
+        }
+        if (direction * source.velocity.x > 0 && Math.abs(source.velocity.x) > Math.abs(this.velocity.x)) {
+            this.velocity.x = this.velocity.x*0.5 + source.velocity.x*0.5 + direction*3;
+        } else {
+            this.velocity.x += direction*3;
+        }
         this.updateHealth();
         if (this.health <= 0) {
             this.health = 0
@@ -357,8 +367,7 @@ function handleHits() {
         var hitEnemies = checkHits(fighters[user]);
         for (enemyFighter in hitEnemies) {
             if (!fighters[user].attackBox.enemiesHit.includes(hitEnemies[enemyFighter])) {
-                fighters[user].position.x < hitEnemies[enemyFighter].position.x ? source = 1 : source = -1;
-                hitEnemies[enemyFighter].receiveDamage(10, source)
+                hitEnemies[enemyFighter].receiveDamage(10, fighters[user])
                 fighters[user].attackBox.enemiesHit.push(hitEnemies[enemyFighter])
                 console.log(hitEnemies[enemyFighter].name + " was hit")
             }
