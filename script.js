@@ -34,6 +34,9 @@ class Fighter {
         this.enemyLeft = false;
 
         this.speed = 3.75;
+        this.baseSpeed = 3.75;
+        this.combo = 0;
+        this.comboExpireTimer = null;
         this.gravity = gravity;
 
         this.facingLeft = false;
@@ -165,6 +168,16 @@ class Fighter {
         }
     }
 
+    incrementCombo() {
+        clearTimeout(this.comboExpireTimer);
+        this.combo++;
+        this.speed += 0.5;
+        this.comboExpireTimer = setTimeout(() => {
+            this.combo = 0;
+            this.speed = this.baseSpeed;
+        }, 500);
+    }
+
     fastFall() {
         if (this.hasFastFall && this.isAlive) {
             this.velocity.y = Math.max(5, this.velocity.y += 5);
@@ -180,10 +193,13 @@ class Fighter {
         this.updateAttackBox();
         this.isAttacking = true;
         this.canAttack = false;
+        var id;
         setTimeout(() => {
             this.isAttacking = false;
             if (this.attackBox.enemiesHit.length > 0) {
+                clearTimeout(id);
                 this.canAttack = true;
+                this.incrementCombo();
             } else {
                 setTimeout(() => {
                     this.canAttack = true;
