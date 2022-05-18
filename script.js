@@ -139,14 +139,15 @@ class Fighter {
     }
 
     jump() {
-        if (this.jumps > 0 && this.hasControl()) {
-            if (this.touchingWall() && !this.touchingFloor()) {
-                this.velocity.x *= 2.5;
-                this.velocity.y = -8;
-            } else {
-                this.velocity.y = -10;
-            }
-
+        if (this.touchingWall() && !this.touchingFloor()) {
+            this.velocity.x *= 2.5;
+            this.velocity.y = -8;
+        } else if (this.jumps > 0 && this.isAirborne()) {
+            this.velocity.y = -10;
+            this.jumps = 0;
+            this.knockbacked = false;
+        } else if (this.jumps > 0 && this.hasControl()) {
+            this.velocity.y = -10;
             this.jumps--;
         }
     }
