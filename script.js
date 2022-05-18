@@ -29,6 +29,7 @@ class Fighter {
         this.hasDash = true;
         this.jumps = this.maxJumps;
         this.isAttacking = false;
+        this.canAttack = true;
         this.knockbacked = false;
         this.enemyLeft = false;
 
@@ -173,15 +174,23 @@ class Fighter {
     }
 
     attack() {
-        if (this.isAttacking || !this.isAlive || this.knockbacked) {
+        if (this.isAttacking || !this.isAlive || this.knockbacked || !this.canAttack) {
             return;
         }
         this.updateAttackBox();
         this.isAttacking = true;
+        this.canAttack = false;
         setTimeout(() => {
             this.isAttacking = false;
+            if (this.attackBox.enemiesHit.length > 0) {
+                this.canAttack = true;
+            } else {
+                setTimeout(() => {
+                    this.canAttack = true;
+                },500)
+            }
             this.attackBox.enemiesHit = [];
-        }, 100);
+        }, 150);
     }
 
     dash() {
