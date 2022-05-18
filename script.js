@@ -10,7 +10,6 @@ const gravity = 0.3;
 const fighters = [];
 const timer = new Date();
 
-
 class Fighter {
     constructor({position = 0, velocity = 0, size = {h: 150, w:50}, color = 'red', damagedColor = 'white', name = 'anonymous', offset = {x: 20, y:30}}) {
         this.position = position;
@@ -37,7 +36,10 @@ class Fighter {
         this.baseSpeed = 3.75;
         this.combo = 0;
         this.comboExpireTimer = null;
+        this.speedReductionTimer = null;
+
         this.gravity = gravity;
+        this.friction = 0.93;
 
         this.facingLeft = false;
 
@@ -86,7 +88,7 @@ class Fighter {
         } else {
             this.position.x += this.velocity.x;
             if (this.touchingFloor()) {
-                this.velocity.x *= 0.93
+                this.velocity.x *= this.friction;
                 this.jumps = this.maxJumps;
                 this.hasFastFall = true;
                 this.knockbacked = false;
@@ -169,11 +171,20 @@ class Fighter {
     }
 
     incrementCombo() {
+        clearInterval(this.speedReductionTimer);
         clearTimeout(this.comboExpireTimer);
         this.combo++;
-        this.speed += 0.5;
+        this.speed = Math.max(this.baseSpeed + 0.5, this.speed + 0.5);
         this.comboExpireTimer = setTimeout(() => {
             this.combo = 0;
+            this.speedReductionTimer = setInterval(() => {
+                if (this.speed * 0.9 < this.baseSpeed) {
+                    this.speed = this.baseSpeed;
+                    clearInterval(this.speedReductionTimer);
+                } else {
+                    this.speed *= 0.95;
+                }
+            }, 50)
             this.speed = this.baseSpeed;
         }, 500);
     }
@@ -210,21 +221,27 @@ class Fighter {
     }
 
     dash() {
+        var oldVelocity = this.velocity.x;
         if (!this.hasDash) {
             return;
         }
         if (this.facingLeft) {
-            this.velocity.x -= 10;
+            this.velocity.x -= 5;
+            oldVelocity = -Math.abs(oldVelocity);
         } else {
-            this.velocity.x += 10;
+            this.velocity.x += 5;
+            oldVelocity = Math.abs(oldVelocity);
         }
+        this.velocity.x *= 1.5;
         this.hasDash = false;
         this.velocity.y = 0;
         this.gravity = 0;
+        this.friction = 0.99;
         setTimeout(() => {
             this.gravity = gravity;
+            this.friction = 0.93;
             if(this.isAirborne) {
-                this.velocity.x *= 0.2
+                this.velocity.x = oldVelocity;
             }
         }, 75)
         setTimeout(() => {
@@ -351,19 +368,6 @@ const enemy = new Fighter({
     color:'red',
     name: 'enemy',
 })
-
-function animate() {
-    window.requestAnimationFrame(animate);
-    c.fillStyle = 'black';
-    c.fillRect(0,0, canvas.width, canvas.height);
-    player.update();
-    enemy.update();
-
-    handleKeys();
-    handleHits();
-
-    resetJustPressed();
-}
 
 function handleKeys() {
 
@@ -550,4 +554,16 @@ function resetJustPressed() {
     }
 }
 
+function animate() {
+    window.requestAnimationFrame(animate);
+    c.fillStyle = 'black';
+    c.fillRect(0,0, canvas.width, canvas.height);
+    player.update();
+    enemy.update();
+
+    handleKeys();
+    handleHits();
+
+    resetJustPressed();
+}
 animate();
