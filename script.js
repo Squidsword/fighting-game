@@ -32,7 +32,7 @@ class Fighter {
         this.knockbacked = false;
         this.enemyLeft = false;
 
-        this.speed = 3;
+        this.speed = 3.75;
         this.gravity = gravity;
 
         this.facingLeft = false;
@@ -114,6 +114,10 @@ class Fighter {
         return this.isAlive && !this.knockbacked && Math.abs(this.velocity.x) <= this.speed;
     }
 
+    hasMovementControl() {
+        return this.hasControl();
+    }
+
     moveLeft() {
         if (this.hasControl()) {
             this.velocity.x = -this.speed;
@@ -169,7 +173,7 @@ class Fighter {
     }
 
     attack() {
-        if (this.isAttacking || !this.isAlive) {
+        if (this.isAttacking || !this.isAlive || this.knockbacked) {
             return;
         }
         this.updateAttackBox();
@@ -245,7 +249,7 @@ class Fighter {
         this.health -= damage;
         this.knockbacked = true;
         this.position.y -= 1;
-        this.velocity.y -= 8;
+        this.velocity.y = -8;
         this.velocity.x = source*3;
         this.updateHealth();
         if (this.health <= 0) {
