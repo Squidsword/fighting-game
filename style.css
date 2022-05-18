@@ -42,3 +42,11 @@
     width: 100%;
     align-items: center;
 }
+
+ul {
+    list-style-type: none;
+}
+
+body {
+   display: inline-block; 
+}

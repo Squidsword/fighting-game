@@ -1,7 +1,10 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
+    <meta charset="UTF-8">
     <head>
         <link rel="stylesheet" href="style.css">
+        <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+        <title>fight</title>
     </head>
     <body>
         <div id="container">
@@ -15,6 +18,28 @@
                 </div>
             </div>
             <canvas id="gameCanvas"></canvas>
+        </div>
+        <div id = "controls">
+            <div id = "playerControls" style="float:left; color:blue;">
+                <ul>
+                    <li>Jump: W</li>
+                    <li>Left: A</li>
+                    <li>Fall: S</li>
+                    <li>Right: D</li>
+                    <li>Hit: F</li>
+                    <li>Dash: Left Shift</li>
+                </ul>
+            </div>
+            <div id = "enemyControls" style="float:right; color: red;">
+                <ul>
+                    <li>Jump: P</li>
+                    <li>Left: L</li>
+                    <li>Fall: ;</li>
+                    <li>Right: "</li>
+                    <li>Hit: K</li>
+                    <li>Dash: Right Shift</li>
+                </ul>
+            </div>
         </div>
     </body>
     <script src='script.js'></script>
