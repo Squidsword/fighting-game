@@ -64,7 +64,6 @@ class Fighter {
 
     draw() {
         if (this.knockbacked) {
-            console.log("knockbacked")
             c.fillStyle = this.damagedColor;
         } else if (!this.isAlive) {
             c.fillStyle = 'gray'
@@ -175,18 +174,24 @@ class Fighter {
         clearTimeout(this.comboExpireTimer);
         this.combo++;
         this.speed = Math.max(this.baseSpeed + 0.5, this.speed + 0.5);
+        console.log(`${this.name} speed: ${this.speed}`)
         this.comboExpireTimer = setTimeout(() => {
-            this.combo = 0;
-            this.speedReductionTimer = setInterval(() => {
-                if (this.speed * 0.9 < this.baseSpeed) {
-                    this.speed = this.baseSpeed;
-                    clearInterval(this.speedReductionTimer);
-                } else {
-                    this.speed *= 0.95;
-                }
-            }, 50)
-            this.speed = this.baseSpeed;
-        }, 500);
+            this.resetCombo();
+        }, 1000);
+    }
+
+    resetCombo() {
+        console.log(`${this.name} combo resetting...`)
+        clearTimeout(this.comboExpireTimer);
+        this.combo = 0;
+        this.speedReductionTimer = setInterval(() => {
+            if (this.speed * 0.9 < this.baseSpeed) {
+                this.speed = this.baseSpeed;
+                clearInterval(this.speedReductionTimer);
+            } else {
+                this.speed *= 0.93;
+            }
+        }, 50)
     }
 
     fastFall() {
@@ -212,12 +217,13 @@ class Fighter {
                 this.canAttack = true;
                 this.incrementCombo();
             } else {
+                this.resetCombo();
                 setTimeout(() => {
                     this.canAttack = true;
                 },500)
             }
             this.attackBox.enemiesHit = [];
-        }, 150);
+        }, 100);
     }
 
     dash() {
@@ -527,15 +533,11 @@ const keys = {
 }
 
 window.addEventListener('keydown', (event) => {
-    console.log(event);
     try {
         keys[event.code].pressed = true;
         keys[event.code].justPressed = !event.repeat;
     } catch {
         console.log("key not binded")
-    }
-    for (property in keys) {
-        console.log(`${property}:${keys[String(property)]['pressed']} ${keys[String(property)]['justPressed']}`);
     }
 })
 
