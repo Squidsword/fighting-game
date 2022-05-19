@@ -11,7 +11,7 @@ const fighters = [];
 const timer = new Date();
 
 class Fighter {
-    constructor({position = 0, velocity = 0, size = {h: 140, w:50}, color = 'red', damagedColor = 'white', name = 'anonymous', offset = {x: 20, y:30}, keyMap}) {
+    constructor({position = 0, velocity = 0, size = {h: 140, w:50}, color = 'red', damagedColor = 'white', name = 'anonymous', offset = {x: 30, y:30}, keyMap}) {
         this.position = position;
         this.velocity = velocity;
         this.size = size;
@@ -49,8 +49,8 @@ class Fighter {
             up: {
                 facingLeft: false,
                 offset: {
-                    x: offset.x,
-                    y: offset.y - 40
+                    x: offset.x - 20,
+                    y: offset.y - 50
                 },
                 position: {
                     x: this.position.x - offset.x,
@@ -81,8 +81,8 @@ class Fighter {
             down: {
                 facingLeft: false,
                 offset: {
-                    x: offset.x,
-                    y: offset.y + 40
+                    x: offset.x - 20,
+                    y: offset.y + 50
                 },
                 position: {
                     x: this.position.x - offset.x,
