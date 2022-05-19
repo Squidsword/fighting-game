@@ -110,7 +110,7 @@ class Fighter {
         }
         c.fillRect(this.position.x, this.position.y, this.size.w, this.size.h);
         if (this.isAttacking) {
-            c.fillStyle = 'green'
+            c.fillStyle = 'purple'
             c.fillRect(this.attackBox.position.x, this.attackBox.position.y, this.attackBox.size.w, this.attackBox.size.h);
         }
     }
@@ -494,6 +494,7 @@ const enemy = new Fighter({
     }
 })
 
+
 function handleKeys() {
 
     for (property in keys) {
@@ -696,4 +697,19 @@ function animate() {
 
     resetJustPressed();
 }
+
+const gameState = {
+    fighters: [
+        player,
+        enemy
+    ],
+    keys: keys
+}
+
+function paintGame(gameState) {
+    for (fighter in gameState['fighters']) {
+        gameState["fighters"][fighter].draw();
+    }
+}
+
 animate();
