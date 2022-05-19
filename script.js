@@ -297,18 +297,24 @@ class Fighter {
     }
 
     dash() {
-        var oldVelocity = this.velocity.x;
         if (!this.hasDash) {
             return;
         }
-        if (this.facingLeft) {
+        var oldVelocity = this.velocity.x;
+        if (this.velocity.x < 0) {
             this.velocity.x -= 5;
-            oldVelocity = -Math.abs(oldVelocity);
         } else {
             this.velocity.x += 5;
-            oldVelocity = Math.abs(oldVelocity);
+            
         }
-        this.velocity.x *= 1.5;
+        if (this.facingLeft) {
+            oldVelocity = -Math.abs(oldVelocity);
+            this.velocity.x = -1.5 * Math.abs(this.velocity.x)
+        } else {
+            oldVelocity = Math.abs(oldVelocity);
+            this.velocity.x = 1.5 * Math.abs(this.velocity.x)
+        }
+        
         this.hasDash = false;
         this.velocity.y = 0;
         this.gravity = 0;
@@ -324,8 +330,6 @@ class Fighter {
             this.hasDash = true;
         }, 500);
     }
-
-    flipAttackBox() {}
 
     updateAttackBox() {
         var enemyList = getOpponents(this);
