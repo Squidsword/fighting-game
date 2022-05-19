@@ -384,7 +384,7 @@ class Fighter {
         this.health -= damage;
         this.knockbacked = true;
         this.position.y -= 1;
-        this.velocity.y = -8 + 0.236*source.velocity.y;
+        this.velocity.y = -8 + 0.382*source.velocity.y;
         var direction;
         if (source.position.x > this.position.x) {
             direction = -1
