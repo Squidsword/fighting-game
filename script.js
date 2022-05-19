@@ -212,7 +212,7 @@ class Fighter {
         clearInterval(this.speedReductionTimer);
         clearTimeout(this.comboExpireTimer);
         this.combo++;
-        this.speed = Math.max(this.baseSpeed + 0.5, this.speed + 0.5);
+        this.speed = this.baseSpeed + Math.pow(this.combo * 0.5, 0.8);
         this.updateComboText();
         this.updateSpeedText();
         console.log(`${this.name} speed: ${this.speed}`)
