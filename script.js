@@ -11,7 +11,7 @@ const fighters = [];
 const timer = new Date();
 
 class Fighter {
-    constructor({position = 0, velocity = 0, size = {h: 150, w:50}, color = 'red', damagedColor = 'white', name = 'anonymous', offset = {x: 20, y:30}}) {
+    constructor({position = 0, velocity = 0, size = {h: 140, w:50}, color = 'red', damagedColor = 'white', name = 'anonymous', offset = {x: 20, y:30}, keyMap}) {
         this.position = position;
         this.velocity = velocity;
         this.size = size;
@@ -37,27 +37,65 @@ class Fighter {
         this.combo = 0;
         this.comboExpireTimer = null;
         this.speedReductionTimer = null;
+        this.keyMap = keyMap;
+
 
         this.gravity = gravity;
         this.friction = 0.93;
 
         this.facingLeft = false;
 
-        this.attackBox = {
-            offset: {
-                x: offset.x,
-                y: offset.y
+        this.attackBoxes = {
+            up: {
+                facingLeft: false,
+                offset: {
+                    x: offset.x,
+                    y: offset.y - 40
+                },
+                position: {
+                    x: this.position.x - offset.x,
+                    y: this.position.y - offset.y
+                },
+                size: {
+                    w: 100,
+                    h: 50
+                },
+                enemiesHit: []
             },
-            position: {
-                x: this.position.x - offset.x,
-                y: this.position.y - offset.y
+            middle: {
+                facingLeft: false,
+                offset: {
+                    x: offset.x,
+                    y: offset.y
+                },
+                position: {
+                    x: this.position.x - offset.x,
+                    y: this.position.y - offset.y
+                },
+                size: {
+                    w: 100,
+                    h: 50
+                },
+                enemiesHit: []
             },
-            size: {
-                w: 100,
-                h: 50
+            down: {
+                facingLeft: false,
+                offset: {
+                    x: offset.x,
+                    y: offset.y + 40
+                },
+                position: {
+                    x: this.position.x - offset.x,
+                    y: this.position.y - offset.y
+                },
+                size: {
+                    w: 100,
+                    h: 50
+                },
+                enemiesHit: []
             },
-            enemiesHit: []
         }
+        this.attackBox = this.attackBoxes["middle"];
         
         fighters.push(this);
     }
@@ -287,6 +325,8 @@ class Fighter {
         }, 500);
     }
 
+    flipAttackBox() {}
+
     updateAttackBox() {
         var enemyList = getOpponents(this);
         var leftEnemies = 0;
@@ -299,14 +339,25 @@ class Fighter {
                 rightEnemies++;
             }
         }
-        if (this.enemyLeft == leftEnemies > rightEnemies) {
-            return;
+        if (keys[this.keyMap["jump"]["key"]]["pressed"] == true) {
+            this.attackBox = this.attackBoxes["up"];
+        } else if (keys[this.keyMap["fall"]["key"]]["pressed"] == true) {
+            this.attackBox = this.attackBoxes["down"];
+        } else {
+            this.attackBox = this.attackBoxes["middle"];
         }
+
         this.enemyLeft = leftEnemies > rightEnemies;
         if (this.enemyLeft) {
-            this.attackBox.offset.x = (this.attackBox.offset.x * -1) - this.size.w;
+            if (!this.attackBox.facingLeft) {
+                this.attackBox.offset.x = (this.attackBox.offset.x * -1) - this.size.w;
+                this.attackBox.facingLeft = true;
+            }
         } else {
-            this.attackBox.offset.x = (this.attackBox.offset.x + this.size.w) * -1;
+            if (this.attackBox.facingLeft) {
+                this.attackBox.offset.x = (this.attackBox.offset.x + this.size.w) * -1;
+                this.attackBox.facingLeft = false;
+            }
         }
     }
 
@@ -329,7 +380,7 @@ class Fighter {
         this.health -= damage;
         this.knockbacked = true;
         this.position.y -= 1;
-        this.velocity.y = -8;
+        this.velocity.y = -8 + 0.236*source.velocity.y;
         var direction;
         if (source.position.x > this.position.x) {
             direction = -1
@@ -382,12 +433,28 @@ const player = new Fighter({
         y: 0,
         topSpeed: 10
     },
-    size:{
-        h:150,
-        w:50
-    },
     color:'blue',
-    name: 'player'
+    name: 'player',
+    keyMap: {
+        jump: {
+            key: "KeyW"
+        },
+        left: {
+            key: "KeyA"
+        },
+        fall: {
+            key: "KeyS"
+        },
+        right: {
+            key: "KeyD"
+        },
+        hit: {
+            key: "KeyF"
+        },
+        dash: {
+            key: "Shift Left"
+        }
+    }
 });
 
 const enemy = new Fighter({
@@ -399,12 +466,28 @@ const enemy = new Fighter({
         x: 0,
         y: 0
     },
-    size: {
-        h:150,
-        w:50
-    },
     color:'red',
     name: 'enemy',
+    keyMap: {
+        jump: {
+            key: "KeyP"
+        },
+        left: {
+            key: "KeyL"
+        },
+        fall: {
+            key: "Semicolon"
+        },
+        right: {
+            key: "Quote"
+        },
+        hit: {
+            key: "KeyK"
+        },
+        dash: {
+            key: "Shift Right"
+        }
+    }
 })
 
 function handleKeys() {
@@ -457,18 +540,25 @@ function getKeyByValue(object, value) {
     return Object.keys(object).find(key => object[key] === value);
 }
 
+function addBehavior(keyType, func, fighter, name) {
+    keys[keyType]['behaviors'].push(func);
+    fighter.keyMap[name] = keyType;
+}
+
 const keys = {
     KeyW: {
         justPressed: false,
         pressed: false,
         behaviors: [{
             type:'justPressed',
+            action: "playerJump",
             func: function() {
                 player.jump();
             }
         },
         {
             type:'xpressed', 
+            action: "playerSpamJump",
             func: function() {
                 player.spamJump();
             }
@@ -477,35 +567,35 @@ const keys = {
     KeyA: {
         justPressed: false,
         pressed: false,
-        behaviors: [{type:'pressed', func: function() {
+        behaviors: [{type:'pressed', action: "playerMoveLeft", func: function() {
             player.moveLeft();
         }}]
     },
     KeyS: {
         justPressed: false,
         pressed: false,
-        behaviors: [{type:'justPressed', func: function() {
+        behaviors: [{type:'justPressed', action: "playerFastFall", func: function() {
             player.fastFall();
         }}]
     },
     KeyD: {
         justPressed: false,
         pressed: false,
-        behaviors: [{type:'pressed', func: function() {
+        behaviors: [{type:'pressed', action: "playerMoveRight", func: function() {
             player.moveRight();
         }}]
     },
     KeyF: {
         justPressed:false,
         pressed: false,
-        behaviors: [{type:'justPressed', func: function() {
+        behaviors: [{type:'justPressed', action: "playerAttack", func: function() {
             player.attack();
         }}]
     },
     ShiftLeft: {
         justPressed: false,
         pressed: false,
-        behaviors: [{type:'justPressed', func: function() {
+        behaviors: [{type:'justPressed', action: "playerDash", func: function() {
             player.dash();
         }}]
     },
@@ -515,12 +605,14 @@ const keys = {
         pressed: false,
         behaviors: [{
             type:'justPressed',
+            action: "enemyJump",
             func: function() {
                 enemy.jump();
             }
         },
         {
             type:'xpressed', 
+            action: "enemySpamJump",
             func: function() {
                 enemy.spamJump();
             }
@@ -529,7 +621,7 @@ const keys = {
     KeyL: {
         justPressed: false,
         pressed: false,
-        behaviors: [{type:'pressed', func: function() {
+        behaviors: [{type:'pressed', action:"enemyMoveLeft", func: function() {
             enemy.moveLeft();
         }}]
     },
@@ -537,28 +629,28 @@ const keys = {
     Semicolon: {
         justPressed: false,
         pressed: false,
-        behaviors: [{type:'justPressed', func: function() {
+        behaviors: [{type:'justPressed', action: "enemyFastFall", func: function() {
             enemy.fastFall();
         }}]
     },
     Quote: {
         justPressed: false,
         pressed: false,
-        behaviors: [{type:'pressed', func: function() {
+        behaviors: [{type:'pressed', action: "enemyMoveRight", func: function() {
             enemy.moveRight();
         }}]
     },
     KeyK: {
         justPressed: false,
         pressed: false,
-        behaviors: [{type:'justPressed', func: function() {
+        behaviors: [{type:'justPressed', action: "enemyAttack", func: function() {
             enemy.attack();
         }}]
     },
     ShiftRight: {
         justPressed: false,
         pressed: false,
-        behaviors: [{type:'justPressed', func: function() {
+        behaviors: [{type:'justPressed', action: "enemyDash", func: function() {
             enemy.dash();
         }}]
     }
