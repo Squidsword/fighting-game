@@ -88,7 +88,7 @@ class Fighter extends Sprite {
                 framesMax: 6
             },
             deathFlipped: {
-                imageSrc: './Martial Hero/Sprites/Death Flipped.png',
+                imageSrc: './Martial Hero/Sprites/Death.png',
                 framesMax: 6
             }
         }
