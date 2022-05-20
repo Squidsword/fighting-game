@@ -8,8 +8,8 @@ var framesPerSecond = 60;
 var framesPassed = 0;
 var lastAnimationFrame = new Date();
 
-canvas.width = 1024;
-canvas.height = 545;
+canvas.width = 1280;
+canvas.height = Math.round(canvas.width * 9 / 16) * 0.82
 
 c.fillRect(0,0, canvas.width, canvas.height)
 
@@ -300,7 +300,7 @@ function resetJustPressed() {
 
 var background = new Sprite({
     imageSrc: './Martial Hero/Sprites/background.jpg',
-    scale: 1.5
+    scale: canvas.width / 1920
 })
 
 function animate() {
