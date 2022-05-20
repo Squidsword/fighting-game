@@ -196,8 +196,9 @@ const keys = {
         justPressed:false,
         pressed: false,
         behaviors: [{type:'justPressed', action: "playerAttack", func: function() {
-            player.framesHold = 5;
-            player.channelAttack();
+            if (!player.isAttacking) {
+                player.attack();
+            }
         }}]
     },
     ShiftLeft: {
@@ -252,8 +253,9 @@ const keys = {
         justPressed: false,
         pressed: false,
         behaviors: [{type:'justPressed', action: "enemyAttack", func: function() {
-            player.framesHold = 5;
-            enemy.channelAttack();
+            if (!enemy.isAttacking) {
+                enemy.attack();
+            }
         }}]
     },
     ShiftRight: {

@@ -8,15 +8,21 @@ class Sprite {
         this.framesElapsed = 0;
         this.framesHold = 15;
         this.offset = offset;
+        this.deathAnimationComplete = false;
     }
     update() {
-        this.framesElapsed++
-
-        if (this.framesElapsed % this.framesHold === 0) {
-            if(this.framesCurrent < this.framesMax - 1) {
-                this.framesCurrent++;
-            } else {
-                this.framesCurrent = 0;
+        if (!this.deathAnimationComplete) {
+            this.framesElapsed++
+            if (this.framesElapsed % this.framesHold === 0) {
+                if(this.framesCurrent < this.framesMax - 1) {
+                    this.framesCurrent++;
+                } else {
+                    if (this.image === this.sprites.death.image || this.image === this.sprites.deathFlipped.image) {
+                        this.deathAnimationComplete = true;
+                    } else {
+                        this.framesCurrent = 0;
+                    }
+                }
             }
         }
     }
@@ -30,7 +36,7 @@ class Fighter extends Sprite {
         color = 'red', 
         damagedColor = 'white', 
         name = 'anonymous', 
-        attackOffset = {x: 30, y:30}, 
+        attackOffset = {x: 30, y:10}, 
         keyMap,
         scale = 1, 
         imageSrc,
@@ -76,6 +82,14 @@ class Fighter extends Sprite {
             fallFlipped: {
                 imageSrc: './Martial Hero/Sprites/Fall Flipped.png',
                 framesMax: 2
+            },
+            death: {
+                imageSrc: './Martial Hero/Sprites/Death.png',
+                framesMax: 6
+            },
+            deathFlipped: {
+                imageSrc: './Martial Hero/Sprites/Death Flipped.png',
+                framesMax: 6
             }
         }
     }) {
@@ -106,7 +120,6 @@ class Fighter extends Sprite {
         this.canAttack = true;
         this.knockbacked = false;
         this.enemyLeft = false;
-        this.channellingAttack = false;
 
         this.speed = 3.75;
         this.baseSpeed = 3.75;
@@ -136,16 +149,16 @@ class Fighter extends Sprite {
             up: {
                 facingLeft: false,
                 attackOffset: {
-                    x: attackOffset.x - 20,
-                    y: attackOffset.y - 50
+                    x: attackOffset.x,
+                    y: attackOffset.y
                 },
                 position: {
                     x: this.position.x - attackOffset.x,
                     y: this.position.y - attackOffset.y
                 },
                 size: {
-                    w: 100,
-                    h: 50
+                    w: 175,
+                    h: 100
                 },
                 enemiesHit: []
             },
@@ -156,28 +169,28 @@ class Fighter extends Sprite {
                     y: attackOffset.y
                 },
                 position: {
-                    x: this.position.x - attackOffset.x,
+                    x: this.position.x - attackOffset.xf,
                     y: this.position.y - attackOffset.y
                 },
                 size: {
-                    w: 175,
-                    h: 50
+                    w: 200,
+                    h: 100
                 },
                 enemiesHit: []
             },
             down: {
                 facingLeft: false,
                 attackOffset: {
-                    x: attackOffset.x - 20,
-                    y: attackOffset.y + 50
+                    x: attackOffset.x,
+                    y: attackOffset.y
                 },
                 position: {
                     x: this.position.x - attackOffset.x,
                     y: this.position.y - attackOffset.y
                 },
                 size: {
-                    w: 100,
-                    h: 50
+                    w: 200,
+                    h: 100
                 },
                 enemiesHit: []
             },
@@ -219,7 +232,6 @@ class Fighter extends Sprite {
                 (this.image.width / this.framesMax) * this.scale,
                 this.image.height * this.scale
             )
-            this.registerAttack();
         }
     }
 
@@ -267,16 +279,9 @@ class Fighter extends Sprite {
         this.draw();
     }
 
-    registerAttack() {
-        if (this.image == this.sprites.attack1.image) {
-            if (this.framesCurrent == this.sprites.attack1.framesMax - 3) {
-                this.attack();
-                this.framesHold = 15;
-            }
-        }
-    }
 
     switchSprite(sprite) {
+
         if (this.image !== sprite.image) {
             this.framesMax = sprite.framesMax;
             this.image = sprite.image;
@@ -284,19 +289,14 @@ class Fighter extends Sprite {
         }
     }
 
-    channelAttack() {
-        if (this.canAttack && !this.isAttacking) {
-            this.channellingAttack = true;
-        } else {
-            this.channellingAttack = false;
-            this.framesHold = 15;
-        }
-        
-    }
 
     updateSprite() {
         if (this.enemyLeft) {
-            if (this.channellingAttack) {
+            if (!this.isAlive) {
+                this.switchSprite(this.sprites.deathFlipped);
+                return;
+            }
+            if (this.isAttacking) {
                 this.switchSprite(this.sprites.attack1Flipped)
                 return;
             }
@@ -310,11 +310,17 @@ class Fighter extends Sprite {
             }
             if (Math.abs(this.velocity.x) > 0.5) {
                 this.switchSprite(this.sprites.runFlipped)
+                return;
             } else {
                 this.switchSprite(this.sprites.idleFlipped)
+                return;
             }
         } else {
-            if (this.channellingAttack) {
+            if (!this.isAlive) {
+                this.switchSprite(this.sprites.death);
+                return;
+            }
+            if (this.isAttacking) {
                 this.switchSprite(this.sprites.attack1)
                 return;
             }
@@ -328,24 +334,25 @@ class Fighter extends Sprite {
             }
             if (Math.abs(this.velocity.x) > 0.5) {
                 this.switchSprite(this.sprites.run)
+                return;
             } else {
                 this.switchSprite(this.sprites.idle)
+                return;
             }
         } 
     }
 
     attack() {
-        if (!this.channellingAttack || this.isAttacking || !this.isAlive || this.knockbacked || !this.canAttack) {
+        if (this.isAttacking || !this.isAlive || this.knockbacked || !this.canAttack) {
             return;
         }
-        this.framesHold = 15;
+        this.framesHold = 2;
         this.updateAttackBox();
         this.isAttacking = true;
         this.canAttack = false;
         var id;
         setTimeout(() => {
             this.isAttacking = false;
-            this.channellingAttack = false;
             if (this.attackBox.enemiesHit.length > 0) {
                 clearTimeout(id);
                 this.canAttack = true;
@@ -358,7 +365,7 @@ class Fighter extends Sprite {
             }
             this.attackBox.enemiesHit = [];
             this.framesHold = 15;
-        }, 150);
+        }, 100);
     }
 
     hasControl() {
@@ -537,12 +544,12 @@ class Fighter extends Sprite {
         this.enemyLeft = leftEnemies > rightEnemies;
         if (this.enemyLeft) {
             if (!this.attackBox.facingLeft) {
-                this.attackBox.attackOffset.x = (this.attackBox.attackOffset.x * -1) - this.size.w;
+                this.attackBox.attackOffset.x = (this.attackBox.attackOffset.x * -1) + this.size.w - this.attackBox.size.w;
                 this.attackBox.facingLeft = true;
             }
         } else {
             if (this.attackBox.facingLeft) {
-                this.attackBox.attackOffset.x = (this.attackBox.attackOffset.x + this.size.w) * -1;
+                this.attackBox.attackOffset.x = (this.attackBox.attackOffset.x - this.size.w + this.attackBox.size.w) * -1;
                 this.attackBox.facingLeft = false;
             }
         }
@@ -558,12 +565,12 @@ class Fighter extends Sprite {
             return
         }
         this.isAlive = false
-        var temp = this.size.w;
-        this.size.w = this.size.h;
-        this.size.h = temp;
     }
 
     receiveDamage(damage, source) {
+        if (!this.isAlive) {
+            return;
+        }
         this.health -= damage;
         this.knockbacked = true;
         this.position.y -= 1;
