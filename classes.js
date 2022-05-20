@@ -123,7 +123,7 @@ class Fighter extends Sprite {
 
         this.sprites = sprites;
 
-        this.debugMode = true;
+        this.debugMode = false;
         
 
         for (var loopSprite in this.sprites) {
