@@ -577,7 +577,9 @@ class Fighter extends Sprite {
 
     updateHealth() {
         var fighterHealth = document.getElementById(`${this.name}Health`)
-        fighterHealth.style.width = `${this.health / this.maxHealth * 100}%`
+        gsap.to(`#${this.name}Health`, {
+            width: `${this.health / this.maxHealth * 100}%`
+        })
     }
 
     drawRectangle() {
