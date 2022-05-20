@@ -9,7 +9,7 @@ var framesPassed = 0;
 var lastAnimationFrame = new Date();
 
 canvas.width = 1024;
-canvas.height = 526;
+canvas.height = 545;
 
 c.fillRect(0,0, canvas.width, canvas.height)
 
@@ -298,6 +298,11 @@ function resetJustPressed() {
     }
 }
 
+var background = new Sprite({
+    imageSrc: './Martial Hero/Sprites/background.jpg',
+    scale: 1.5
+})
+
 function animate() {
     if (framesPassed % 60 === 0) {
         sixtyFrameTime = (new Date() - lastAnimationFrame);
@@ -311,8 +316,7 @@ function animate() {
     }
     lastAnimationFrame = new Date();
     window.requestAnimationFrame(animate);
-    c.fillStyle = 'black';
-    c.fillRect(0,0, canvas.width, canvas.height);
+    background.update();
 
     handleKeys();
     handleHits();

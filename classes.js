@@ -1,5 +1,5 @@
 class Sprite {
-    constructor({imageSrc = '', scale = 1, framesMax = 1, offset = {x:215, y:180}}, framesHold = slowFrameFactor) {
+    constructor({position = {x:0, y:0}, imageSrc = '', scale = 1, framesMax = 1, offset = {x:0, y:0}}, framesHold = slowFrameFactor) {
         this.image = new Image();
         this.image.src = imageSrc;
         this.scale = scale;
@@ -7,24 +7,22 @@ class Sprite {
         this.framesCurrent = 0;
         this.framesElapsed = 0;
         this.framesHold = Math.ceil(framesHold);
+        this.position = position;
         this.offset = offset;
-        this.deathAnimationComplete = false;
+
     }
     update() {
-        if (!this.deathAnimationComplete) {
-            this.framesElapsed++
-            if (this.framesElapsed % this.framesHold === 0) {
-                if(this.framesCurrent < this.framesMax - 1) {
-                    this.framesCurrent++;
-                } else {
-                    if (this.image === this.sprites.death.image || this.image === this.sprites.deathFlipped.image) {
-                        this.deathAnimationComplete = true;
-                    } else {
-                        this.framesCurrent = 0;
-                    }
-                }
-            }
-        }
+        c.drawImage(
+            this.image,
+            this.framesCurrent * (this.image.width / this.framesMax),
+            0,
+            this.image.width / this.framesMax,
+            this.image.height,
+            this.position.x - this.offset.x,
+            this.position.y - this.offset.y,
+            (this.image.width / this.framesMax) * this.scale,
+                this.image.height * this.scale
+        )
     }
 }
 
@@ -41,7 +39,7 @@ class Fighter extends Sprite {
         scale = 1, 
         imageSrc,
         framesMax,
-        offset,
+        offset = {x:215, y:180},
         sprites = {
             attack1: {
                 imageSrc: './Martial Hero/Sprites/Attack1.png',
@@ -126,6 +124,8 @@ class Fighter extends Sprite {
         this.combo = 0;
         this.comboExpireTimer = null;
         this.speedReductionTimer = null;
+
+        this.deathAnimationComplete = false;
 
         this.gravity = gravity;
         this.friction = 0.93;
@@ -370,7 +370,20 @@ class Fighter extends Sprite {
     }
 
     update() {
-        super.update();
+        if (!this.deathAnimationComplete) {
+            this.framesElapsed++
+            if (this.framesElapsed % this.framesHold === 0) {
+                if(this.framesCurrent < this.framesMax - 1) {
+                    this.framesCurrent++;
+                } else {
+                    if (this.image === this.sprites.death.image || this.image === this.sprites.deathFlipped.image) {
+                        this.deathAnimationComplete = true;
+                    } else {
+                        this.framesCurrent = 0;
+                    }
+                }
+            }
+        }
         if (this.position.x + this.velocity.x < 0) {
             this.position.x = 0
             this.velocity.x = -0.75 * this.velocity.x;
