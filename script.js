@@ -1,6 +1,13 @@
 const canvas = document.querySelector('canvas');
 const c = canvas.getContext('2d');
 
+var slowFrameFactor = 10;
+var framesPerSecond = 60;
+
+
+var framesPassed = 0;
+var lastAnimationFrame = new Date();
+
 canvas.width = 1024;
 canvas.height = 526;
 
@@ -292,16 +299,29 @@ function resetJustPressed() {
 }
 
 function animate() {
+    if (framesPassed % 60 === 0) {
+        sixtyFrameTime = (new Date() - lastAnimationFrame);
+        framesPerSecond = 60 / sixtyFrameTime;
+        slowFrameFactor = 2 * framesPerSecond;
+        for (fighterSprite in fighters) {
+            if (!fighters[fighterSprite].isAttacking) {
+                fighters[fighterSprite].framesHold = Math.ceil(slowFrameFactor);
+            }
+        }
+    }
+    lastAnimationFrame = new Date();
     window.requestAnimationFrame(animate);
     c.fillStyle = 'black';
     c.fillRect(0,0, canvas.width, canvas.height);
-    player.update();
-    enemy.update();
 
     handleKeys();
     handleHits();
 
+    player.update();
+    enemy.update();
+
     resetJustPressed();
+    framesPassed++;
 }
 
 animate();

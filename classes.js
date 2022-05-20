@@ -1,12 +1,12 @@
 class Sprite {
-    constructor({imageSrc = '', scale = 1, framesMax = 1, offset = {x:215, y:175}}) {
+    constructor({imageSrc = '', scale = 1, framesMax = 1, offset = {x:215, y:180}}, framesHold = slowFrameFactor) {
         this.image = new Image();
         this.image.src = imageSrc;
         this.scale = scale;
         this.framesMax = framesMax;
         this.framesCurrent = 0;
         this.framesElapsed = 0;
-        this.framesHold = 15;
+        this.framesHold = Math.ceil(framesHold);
         this.offset = offset;
         this.deathAnimationComplete = false;
     }
@@ -200,39 +200,173 @@ class Fighter extends Sprite {
         fighters.push(this);
     }
 
-    drawRectangle() {
-        if (this.knockbacked) {
-            c.fillStyle = this.damagedColor;
-        } else if (!this.isAlive) {
-            c.fillStyle = 'gray'
-        } else {
-            c.fillStyle = this.color
+    attack() {
+        if (this.isAttacking || !this.isAlive || this.knockbacked || !this.canAttack) {
+            return;
         }
-        c.fillRect(this.position.x, this.position.y, this.size.w, this.size.h);
-        if (this.isAttacking) {
-            c.fillStyle = 'purple'
-            c.fillRect(this.attackBox.position.x, this.attackBox.position.y, this.attackBox.size.w, this.attackBox.size.h);
+        this.framesHold = 1;
+        this.updateAttackBox();
+        this.isAttacking = true;
+        this.canAttack = false;
+        var id;
+        setTimeout(() => {
+            this.isAttacking = false;
+            if (this.attackBox.enemiesHit.length > 0) {
+                clearTimeout(id);
+                this.canAttack = true;
+                this.incrementCombo();
+            } else {
+                this.resetCombo();
+                setTimeout(() => {
+                    this.canAttack = true;
+                },500)
+            }
+            this.attackBox.enemiesHit = [];
+            this.framesHold = Math.ceil(slowFrameFactor);
+        }, 100);
+    }
+
+    moveLeft() {
+        if (this.hasControl()) {
+            this.velocity.x = -this.speed;
+        }
+        this.facingLeft = true;
+    }
+
+    moveRight() {
+        if (this.hasControl()) {
+            this.velocity.x = this.speed;
+        }
+        this.facingLeft = false;
+    }
+
+    jump() {
+        if (this.touchingWall() && !this.touchingFloor()) {
+            this.velocity.x *= 2.5;
+            this.velocity.y = -8;
+        } else if (this.jumps > 0 && this.isAirborne()) {
+            this.knockbacked = false;
+            this.velocity.y = -10;
+            this.jumps = 0;
+        } else if (this.jumps > 0 && this.hasControl()) {
+            this.velocity.y = -10;
+            this.jumps--;
+        }
+    }   
+
+    spamJump() {
+        if (this.position.y + this.size.h === canvas.height) {
+            this.jump();
         }
     }
-    draw() {
-        if (this.debugMode) {
-            this.drawRectangle();
+
+    fastFall() {
+        if (this.hasFastFall && this.isAlive) {
+            this.velocity.y = Math.max(10, this.velocity.y += 10);
+            this.hasFastFall = false;
+            this.knockbacked = false;
         }
-        if (this.image.src == '') {
-            this.drawRectangle();
+    }
+
+    dash() {
+        if (!this.hasDash) {
+            return;
+        }
+        var oldVelocity = this.velocity.x;
+        if (this.velocity.x < 0) {
+            this.velocity.x -= 5;
         } else {
-            c.drawImage(
-                this.image,
-                this.framesCurrent * (this.image.width / this.framesMax),
-                0,
-                this.image.width / this.framesMax,
-                this.image.height,
-                this.position.x - this.offset.x,
-                this.position.y - this.offset.y,
-                (this.image.width / this.framesMax) * this.scale,
-                this.image.height * this.scale
-            )
+            this.velocity.x += 5;
+            
         }
+        if (this.facingLeft) {
+            oldVelocity = -Math.abs(oldVelocity);
+            this.velocity.x = -1.5 * Math.abs(this.velocity.x)
+        } else {
+            oldVelocity = Math.abs(oldVelocity);
+            this.velocity.x = 1.5 * Math.abs(this.velocity.x)
+        }
+        
+        this.hasDash = false;
+        this.velocity.y = 0;
+        this.gravity = 0;
+        this.friction = 0.99;
+        setTimeout(() => {
+            this.gravity = gravity;
+            this.friction = 0.93;
+            if(this.isAirborne) {
+                this.velocity.x = oldVelocity;
+            }
+        }, 75)
+        setTimeout(() => {
+            this.hasDash = true;
+        }, 500);
+    }
+
+    die() {
+        if (!this.isAlive) {
+            return
+        }
+        this.isAlive = false
+    }
+
+    receiveDamage(damage, source) {
+        if (!this.isAlive) {
+            return;
+        }
+        this.health -= damage;
+        this.knockbacked = true;
+        this.position.y -= 1;
+        this.velocity.y = -8 + 0.382*source.velocity.y;
+        var direction;
+        if (source.position.x > this.position.x) {
+            direction = -1
+        } else {
+            direction = 1;
+        }
+        if (direction * source.velocity.x > 0 && Math.abs(source.velocity.x) > Math.abs(this.velocity.x)) {
+            this.velocity.x = this.velocity.x*0.5 + source.velocity.x*0.5 + direction*3;
+        } else {
+            this.velocity.x += direction*3;
+        }
+        this.updateHealth();
+        if (this.health <= 0) {
+            this.health = 0
+            this.die()
+        }
+    }
+
+    hasControl() {
+        return this.isAlive && !this.knockbacked && Math.abs(this.velocity.x) <= this.speed;
+    }
+
+    hasMovementControl() {
+        return this.hasControl();
+    }
+
+    touchingFloor() {
+        return this.position.y + this.size.h >= canvas.height;
+    }
+
+    touchingWall() {
+        return this.position.x <= 0 || this.position.x + this.size.w >= canvas.width;
+    }
+
+    isAirborne() {
+        return !this.touchingFloor() && !this.touchingWall()
+    }
+
+    incrementCombo() {
+        clearInterval(this.speedReductionTimer);
+        clearTimeout(this.comboExpireTimer);
+        this.combo++;
+        this.speed = this.baseSpeed + Math.pow(this.combo * 0.5, 0.8);
+        this.updateComboText();
+        this.updateSpeedText();
+        console.log(`${this.name} speed: ${this.speed}`)
+        this.comboExpireTimer = setTimeout(() => {
+            this.resetCombo();
+        }, 750);
     }
 
     update() {
@@ -272,10 +406,12 @@ class Fighter extends Sprite {
                 this.velocity.y = Math.min(this.velocity.y, 1.5);
             }
         }
+
         this.attackBox.position.x = this.position.x + this.attackBox.attackOffset.x
         this.attackBox.position.y = this.position.y + this.attackBox.attackOffset.y
         
         this.updateSprite();
+        this.updateEnemiesLeft();
         this.draw();
     }
 
@@ -291,6 +427,9 @@ class Fighter extends Sprite {
 
 
     updateSprite() {
+        if (this.deathAnimationComplete) {
+            return;
+        }
         if (this.enemyLeft) {
             if (!this.isAlive && this.touchingFloor()) {
                 this.switchSprite(this.sprites.deathFlipped);
@@ -342,97 +481,19 @@ class Fighter extends Sprite {
         } 
     }
 
-    attack() {
-        if (this.isAttacking || !this.isAlive || this.knockbacked || !this.canAttack) {
-            return;
-        }
-        this.framesHold = 2;
-        this.updateAttackBox();
-        this.isAttacking = true;
-        this.canAttack = false;
-        var id;
-        setTimeout(() => {
-            this.isAttacking = false;
-            if (this.attackBox.enemiesHit.length > 0) {
-                clearTimeout(id);
-                this.canAttack = true;
-                this.incrementCombo();
+    updateEnemiesLeft() {
+        var enemyList = getOpponents(this);
+        var leftEnemies = 0;
+        var rightEnemies = 0;
+        for (enemyFighter in enemyList) {
+            var enemyFighter = enemyList[enemyFighter];
+            if (this.position.x > enemyFighter.position.x) {
+                leftEnemies++;
             } else {
-                this.resetCombo();
-                setTimeout(() => {
-                    this.canAttack = true;
-                },500)
+                rightEnemies++;
             }
-            this.attackBox.enemiesHit = [];
-            this.framesHold = 15;
-        }, 100);
-    }
-
-    hasControl() {
-        return this.isAlive && !this.knockbacked && Math.abs(this.velocity.x) <= this.speed;
-    }
-
-    hasMovementControl() {
-        return this.hasControl();
-    }
-
-    moveLeft() {
-        if (this.hasControl()) {
-            this.velocity.x = -this.speed;
         }
-        this.facingLeft = true;
-    }
-
-    moveRight() {
-        if (this.hasControl()) {
-            this.velocity.x = this.speed;
-        }
-        this.facingLeft = false;
-    }
-
-    touchingFloor() {
-        return this.position.y + this.size.h >= canvas.height;
-    }
-
-    touchingWall() {
-        return this.position.x <= 0 || this.position.x + this.size.w >= canvas.width;
-    }
-
-    isAirborne() {
-        return !this.touchingFloor() && !this.touchingWall()
-    }
-
-    jump() {
-        if (this.touchingWall() && !this.touchingFloor()) {
-            this.velocity.x *= 2.5;
-            this.velocity.y = -8;
-        } else if (this.jumps > 0 && this.isAirborne()) {
-            this.knockbacked = false;
-            this.velocity.y = -10;
-            this.jumps = 0;
-        } else if (this.jumps > 0 && this.hasControl()) {
-            this.velocity.y = -10;
-            this.jumps--;
-        }
-    }   
-
-    spamJump() {
-        if (this.position.y + this.size.h === canvas.height) {
-            this.jump();
-        }
-    }
-
-    incrementCombo() {
-        clearInterval(this.speedReductionTimer);
-        clearTimeout(this.comboExpireTimer);
-        this.combo++;
-        this.speed = this.baseSpeed + Math.pow(this.combo * 0.5, 0.8);
-        this.updateComboText();
-        this.updateSpeedText();
-        console.log(`${this.name} speed: ${this.speed}`)
-        this.comboExpireTimer = setTimeout(() => {
-            this.resetCombo();
-        }, 750);
+        this.enemyLeft = leftEnemies > rightEnemies;
     }
 
     updateComboText() {
@@ -478,61 +539,8 @@ class Fighter extends Sprite {
         }, 50)
     }
 
-    fastFall() {
-        if (this.hasFastFall && this.isAlive) {
-            this.velocity.y = Math.max(10, this.velocity.y += 10);
-            this.hasFastFall = false;
-            this.knockbacked = false;
-        }
-    }
-
-    dash() {
-        if (!this.hasDash) {
-            return;
-        }
-        var oldVelocity = this.velocity.x;
-        if (this.velocity.x < 0) {
-            this.velocity.x -= 5;
-        } else {
-            this.velocity.x += 5;
-            
-        }
-        if (this.facingLeft) {
-            oldVelocity = -Math.abs(oldVelocity);
-            this.velocity.x = -1.5 * Math.abs(this.velocity.x)
-        } else {
-            oldVelocity = Math.abs(oldVelocity);
-            this.velocity.x = 1.5 * Math.abs(this.velocity.x)
-        }
-        
-        this.hasDash = false;
-        this.velocity.y = 0;
-        this.gravity = 0;
-        this.friction = 0.99;
-        setTimeout(() => {
-            this.gravity = gravity;
-            this.friction = 0.93;
-            if(this.isAirborne) {
-                this.velocity.x = oldVelocity;
-            }
-        }, 75)
-        setTimeout(() => {
-            this.hasDash = true;
-        }, 500);
-    }
-
     updateAttackBox() {
-        var enemyList = getOpponents(this);
-        var leftEnemies = 0;
-        var rightEnemies = 0;
-        for (enemyFighter in enemyList) {
-            var enemyFighter = enemyList[enemyFighter];
-            if (this.position.x > enemyFighter.position.x) {
-                leftEnemies++;
-            } else {
-                rightEnemies++;
-            }
-        }
+
         if (keys[this.keyMap["jump"]["key"]]["pressed"] == true) {
             this.attackBox = this.attackBoxes["up"];
         } else if (keys[this.keyMap["fall"]["key"]]["pressed"] == true) {
@@ -541,7 +549,6 @@ class Fighter extends Sprite {
             this.attackBox = this.attackBoxes["middle"];
         }
 
-        this.enemyLeft = leftEnemies > rightEnemies;
         if (this.enemyLeft) {
             if (!this.attackBox.facingLeft) {
                 this.attackBox.attackOffset.x = (this.attackBox.attackOffset.x * -1) + this.size.w - this.attackBox.size.w;
@@ -560,36 +567,39 @@ class Fighter extends Sprite {
         fighterHealth.style.width = `${this.health / this.maxHealth * 100}%`
     }
 
-    die() {
-        if (!this.isAlive) {
-            return
+    drawRectangle() {
+        if (this.knockbacked) {
+            c.fillStyle = this.damagedColor;
+        } else if (!this.isAlive) {
+            c.fillStyle = 'gray'
+        } else {
+            c.fillStyle = this.color
         }
-        this.isAlive = false
+        c.fillRect(this.position.x, this.position.y, this.size.w, this.size.h);
+        if (this.isAttacking) {
+            c.fillStyle = 'purple'
+            c.fillRect(this.attackBox.position.x, this.attackBox.position.y, this.attackBox.size.w, this.attackBox.size.h);
+        }
     }
 
-    receiveDamage(damage, source) {
-        if (!this.isAlive) {
-            return;
+    draw() {
+        if (this.debugMode) {
+            this.drawRectangle();
         }
-        this.health -= damage;
-        this.knockbacked = true;
-        this.position.y -= 1;
-        this.velocity.y = -8 + 0.382*source.velocity.y;
-        var direction;
-        if (source.position.x > this.position.x) {
-            direction = -1
+        if (this.image.src == '') {
+            this.drawRectangle();
         } else {
-            direction = 1;
-        }
-        if (direction * source.velocity.x > 0 && Math.abs(source.velocity.x) > Math.abs(this.velocity.x)) {
-            this.velocity.x = this.velocity.x*0.5 + source.velocity.x*0.5 + direction*3;
-        } else {
-            this.velocity.x += direction*3;
-        }
-        this.updateHealth();
-        if (this.health <= 0) {
-            this.health = 0
-            this.die()
+            c.drawImage(
+                this.image,
+                this.framesCurrent * (this.image.width / this.framesMax),
+                0,
+                this.image.width / this.framesMax,
+                this.image.height,
+                this.position.x - this.offset.x,
+                this.position.y - this.offset.y,
+                (this.image.width / this.framesMax) * this.scale,
+                this.image.height * this.scale
+            )
         }
     }
 }
