@@ -285,7 +285,13 @@ class Fighter extends Sprite {
     }
 
     channelAttack() {
-        this.channellingAttack = true;
+        if (this.canAttack && !this.isAttacking) {
+            this.channellingAttack = true;
+        } else {
+            this.channellingAttack = false;
+            this.framesHold = 15;
+        }
+        
     }
 
     updateSprite() {
@@ -308,7 +314,7 @@ class Fighter extends Sprite {
                 this.switchSprite(this.sprites.idleFlipped)
             }
         } else {
-            if (this.channellingAttack || this.isAttacking) {
+            if (this.channellingAttack) {
                 this.switchSprite(this.sprites.attack1)
                 return;
             }
@@ -329,7 +335,7 @@ class Fighter extends Sprite {
     }
 
     attack() {
-        if (this.isAttacking || !this.isAlive || this.knockbacked || !this.canAttack) {
+        if (!this.channellingAttack || this.isAttacking || !this.isAlive || this.knockbacked || !this.canAttack) {
             return;
         }
         this.framesHold = 15;
@@ -339,6 +345,7 @@ class Fighter extends Sprite {
         var id;
         setTimeout(() => {
             this.isAttacking = false;
+            this.channellingAttack = false;
             if (this.attackBox.enemiesHit.length > 0) {
                 clearTimeout(id);
                 this.canAttack = true;
@@ -350,6 +357,7 @@ class Fighter extends Sprite {
                 },500)
             }
             this.attackBox.enemiesHit = [];
+            this.framesHold = 15;
         }, 150);
     }
 

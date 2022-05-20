@@ -196,7 +196,7 @@ const keys = {
         justPressed:false,
         pressed: false,
         behaviors: [{type:'justPressed', action: "playerAttack", func: function() {
-            player.framesHold = 4;
+            player.framesHold = 5;
             player.channelAttack();
         }}]
     },
@@ -204,7 +204,7 @@ const keys = {
         justPressed: false,
         pressed: false,
         behaviors: [{type:'justPressed', action: "playerDash", func: function() {
-            player.channelAttack();
+            player.dash();
         }}]
     },
 
@@ -252,7 +252,8 @@ const keys = {
         justPressed: false,
         pressed: false,
         behaviors: [{type:'justPressed', action: "enemyAttack", func: function() {
-            enemy.attack();
+            player.framesHold = 5;
+            enemy.channelAttack();
         }}]
     },
     ShiftRight: {
