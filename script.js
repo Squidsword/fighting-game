@@ -19,7 +19,7 @@ const timer = new Date();
 
 const player = new Fighter({
     position: {
-        x: 50,
+        x: canvas.width * 0.10,
         y: 200
     },
     velocity: {
@@ -56,7 +56,7 @@ const player = new Fighter({
 
 const enemy = new Fighter({
     position: {
-        x: 925,
+        x: canvas.width * 0.9 - 75,
         y: 200
     },
     velocity: {
