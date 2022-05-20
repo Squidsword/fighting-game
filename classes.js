@@ -1,5 +1,5 @@
 class Sprite {
-    constructor({imageSrc = '', scale = 1, framesMax = 1, offset = {x:215, y:165}}) {
+    constructor({imageSrc = '', scale = 1, framesMax = 1, offset = {x:215, y:175}}) {
         this.image = new Image();
         this.image.src = imageSrc;
         this.scale = scale;
@@ -32,7 +32,7 @@ class Fighter extends Sprite {
     constructor({
         position = 0, 
         velocity = 0, 
-        size = {h: 140, w:50}, 
+        size = {h: 125, w:50}, 
         color = 'red', 
         damagedColor = 'white', 
         name = 'anonymous', 
@@ -292,7 +292,7 @@ class Fighter extends Sprite {
 
     updateSprite() {
         if (this.enemyLeft) {
-            if (!this.isAlive) {
+            if (!this.isAlive && this.touchingFloor()) {
                 this.switchSprite(this.sprites.deathFlipped);
                 return;
             }
@@ -316,7 +316,7 @@ class Fighter extends Sprite {
                 return;
             }
         } else {
-            if (!this.isAlive) {
+            if (!this.isAlive && this.touchingFloor()) {
                 this.switchSprite(this.sprites.death);
                 return;
             }
