@@ -13,7 +13,7 @@ canvas.height = Math.round(canvas.width * 9 / 16) * 0.82
 
 c.fillRect(0,0, canvas.width, canvas.height)
 
-const gravity = 0.3;
+var gravity = 18 / framesPerSecond
 const fighters = [];
 const timer = new Date();
 
@@ -307,16 +307,16 @@ var background = new Sprite({
 
 function animate() {
     if (framesPassed % 60 === 0) {
-        sixtyFrameTime = (new Date() - lastAnimationFrame);
+        sixtyFrameTime = (new Date() - lastAnimationFrame) / 1000;
+        lastAnimationFrame = new Date();
         framesPerSecond = 60 / sixtyFrameTime;
-        slowFrameFactor = 2 * framesPerSecond;
+        slowFrameFactor = framesPerSecond * 0.1;
         for (fighterSprite in fighters) {
             if (!fighters[fighterSprite].isAttacking) {
                 fighters[fighterSprite].framesHold = Math.ceil(slowFrameFactor);
             }
         }
     }
-    lastAnimationFrame = new Date();
     window.requestAnimationFrame(animate);
     background.update();
 

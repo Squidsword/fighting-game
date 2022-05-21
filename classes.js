@@ -139,6 +139,7 @@ class Fighter extends Sprite {
 
         this.debugMode = false;
         
+        this.velocityHighscore = 0;
 
         for (var loopSprite in this.sprites) {
             this.sprites[loopSprite].image = new Image()
@@ -429,6 +430,9 @@ class Fighter extends Sprite {
         this.attackBox.position.x = this.position.x + this.attackBox.attackOffset.x
         this.attackBox.position.y = this.position.y + this.attackBox.attackOffset.y
         
+        if (Math.abs(this.velocity.x) > this.velocityHighscore) {
+            this.velocityHighscore = Math.abs(this.velocity.x);
+        }
         this.updateSprite();
         this.updateEnemiesLeft();
         this.draw();
