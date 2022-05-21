@@ -28,8 +28,8 @@ class Sprite {
 
 class Fighter extends Sprite {
     constructor({
-        position = 0, 
-        velocity = 0, 
+        position = {x:0, y:0}, 
+        velocity = {x:0, y:0}, 
         size = {h: 125, w:50}, 
         color = 'red', 
         damagedColor = 'white', 
@@ -101,6 +101,9 @@ class Fighter extends Sprite {
 
         this.position = position;
         this.velocity = velocity;
+
+        this.standardizedVelocity = velocity;
+
         this.size = size;
         this.color = color;
         this.damagedColor = damagedColor;
@@ -398,7 +401,7 @@ class Fighter extends Sprite {
             this.position.x = canvas.width - this.size.w;
             this.velocity.x = -0.75 * this.velocity.x;
         } else {
-            this.position.x += this.velocity.x;
+            this.position.x += standardizeVelocity(this.velocity.x);
             this.updateVelocityText();
             if (this.touchingFloor()) {
                 this.velocity.x *= this.friction;
@@ -418,7 +421,7 @@ class Fighter extends Sprite {
             this.position.y = Math.abs(this.position.y + this.velocity.y)
             this.velocity.y *= -0.312
         } else {
-            this.position.y += this.velocity.y;
+            this.position.y += standardizeVelocity(this.velocity.y);
             if (this.position.y + this.size.h < canvas.height) {
                 this.velocity.y += gravity
             }
@@ -626,4 +629,13 @@ class Fighter extends Sprite {
             )
         }
     }
+}
+
+function standardizeVelocity(velocity) {
+    return velocity * 144 / framesPerSecond;
+}
+
+// later
+function standardizeMultiplier(value) {
+    return Math.pow(value * 144 / framesPerSecond);
 }

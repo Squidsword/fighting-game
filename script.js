@@ -2,7 +2,7 @@ const canvas = document.querySelector('canvas');
 const c = canvas.getContext('2d');
 
 var slowFrameFactor = 10;
-var framesPerSecond = 60;
+var framesPerSecond = 144;
 
 
 var framesPassed = 0;
@@ -13,7 +13,7 @@ canvas.height = Math.round(canvas.width * 9 / 16) * 0.82
 
 c.fillRect(0,0, canvas.width, canvas.height)
 
-var gravity = 18 / framesPerSecond
+var gravity = 43.2 / framesPerSecond
 const fighters = [];
 const timer = new Date();
 
