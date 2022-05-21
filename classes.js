@@ -401,7 +401,7 @@ class Fighter extends Sprite {
             this.position.x = canvas.width - this.size.w;
             this.velocity.x = -0.75 * this.velocity.x;
         } else {
-            this.position.x += standardizeVelocity(this.velocity.x);
+            this.position.x += standardizeValue(this.velocity.x);
             this.updateVelocityText();
             if (this.touchingFloor()) {
                 this.velocity.x *= this.friction;
@@ -413,6 +413,7 @@ class Fighter extends Sprite {
             }
         }
 
+        gravity = standardizeValue(0.3);
         if (this.position.y + this.size.h + this.velocity.y > canvas.height) {
             this.position.y = canvas.height - this.size.h;
             this.velocity.y = 0;
@@ -421,7 +422,7 @@ class Fighter extends Sprite {
             this.position.y = Math.abs(this.position.y + this.velocity.y)
             this.velocity.y *= -0.312
         } else {
-            this.position.y += standardizeVelocity(this.velocity.y);
+            this.position.y += standardizeValue(this.velocity.y);
             if (this.position.y + this.size.h < canvas.height) {
                 this.velocity.y += gravity
             }
@@ -631,11 +632,12 @@ class Fighter extends Sprite {
     }
 }
 
-function standardizeVelocity(velocity) {
-    return velocity * 144 / framesPerSecond;
+function standardizeValue(value) {
+    return value * 144 / framesPerSecond;
 }
 
 // later
 function standardizeMultiplier(value) {
     return Math.pow(value * 144 / framesPerSecond);
 }
+
