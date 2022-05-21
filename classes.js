@@ -511,8 +511,8 @@ class Fighter extends Sprite {
 
     updateComboText() {
         try {
-            var combo = document.getElementById(`${this.name}Combo`);
-            combo.textContent = `Combo: ${this.combo}`;
+            var combo = document.getElementById(`${this.name}Flow`);
+            combo.textContent = `Flow: ${this.combo}`;
         } catch {
             console.log("combotext not found");
         }
