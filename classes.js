@@ -86,7 +86,7 @@ class Fighter extends Sprite {
                 framesMax: 6
             },
             deathFlipped: {
-                imageSrc: './Martial Hero/Sprites/Death.png',
+                imageSrc: './Martial Hero/Sprites/Death Flipped.png',
                 framesMax: 6
             }
         }
@@ -454,7 +454,7 @@ class Fighter extends Sprite {
 
 
     updateSprite() {
-        if (this.deathAnimationComplete) {
+        if (this.deathAnimationComplete || this.image === this.sprites.deathFlipped.image || this.image === this.sprites.death.image) {
             return;
         }
         if (this.enemyLeft) {
@@ -637,6 +637,7 @@ function standardizeValue(value) {
 }
 
 function standardizeMultiplier(value) {
+    // Approximation for performance
     return 1 - ((1-value) * 144 / framesPerSecond);
 }
 
