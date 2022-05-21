@@ -366,7 +366,7 @@ class Fighter extends Sprite {
         console.log(`${this.name} speed: ${this.speed}`)
         this.comboExpireTimer = setTimeout(() => {
             this.resetCombo();
-        }, 750);
+        }, 1000);
     }
 
     update() {
