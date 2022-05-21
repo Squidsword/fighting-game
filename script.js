@@ -84,10 +84,10 @@ const enemy = new Fighter({
             key: "Quote"
         },
         hit: {
-            key: "KeyK"
+            key: "Enter"
         },
         dash: {
-            key: "Shift Right"
+            key: "KeyM"
         }
     }
 })
@@ -258,7 +258,7 @@ const keys = {
             enemy.moveRight();
         }}]
     },
-    KeyK: {
+    Enter: {
         justPressed: false,
         pressed: false,
         behaviors: [{type:'justPressed', action: "enemyAttack", func: function() {
@@ -267,7 +267,7 @@ const keys = {
             }
         }}]
     },
-    ShiftRight: {
+    KeyM: {
         justPressed: false,
         pressed: false,
         behaviors: [{type:'justPressed', action: "enemyDash", func: function() {
@@ -277,6 +277,7 @@ const keys = {
 }
 
 window.addEventListener('keydown', (event) => {
+    console.log(event);
     try {
         keys[event.code].pressed = true;
         keys[event.code].justPressed = !event.repeat;
