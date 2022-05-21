@@ -296,10 +296,10 @@ class Fighter extends Sprite {
         this.isDashing = true;
         this.velocity.y = 0;
         this.gravity = 0;
-        this.friction = 0.99;
+        this.friction = standardizeMultiplier(0.99);
         setTimeout(() => {
             this.gravity = gravity;
-            this.friction = 0.93;
+            this.friction = standardizeMultiplier(0.93);
             if(this.isAirborne) {
                 this.velocity.x = oldVelocity;
             }
@@ -404,12 +404,12 @@ class Fighter extends Sprite {
             this.position.x += standardizeValue(this.velocity.x);
             this.updateVelocityText();
             if (this.touchingFloor()) {
-                this.velocity.x *= this.friction;
+                this.velocity.x *= standardizeMultiplier(this.friction);
                 this.jumps = this.maxJumps;
                 this.hasFastFall = true;
                 this.knockbacked = false;
             } else {
-                this.velocity.x *= 0.998
+                this.velocity.x *= standardizeMultiplier(0.998);
             }
         }
 
@@ -636,8 +636,8 @@ function standardizeValue(value) {
     return value * 144 / framesPerSecond;
 }
 
-// later
 function standardizeMultiplier(value) {
-    return Math.pow(value * 144 / framesPerSecond);
+    return 1 - ((1-value) * 144 / framesPerSecond);
 }
+
 
