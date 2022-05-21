@@ -118,6 +118,7 @@ class Fighter extends Sprite {
         this.canAttack = true;
         this.knockbacked = false;
         this.enemyLeft = false;
+        this.isDashing = false;
 
         this.speed = 3.75;
         this.baseSpeed = 3.75;
@@ -288,6 +289,7 @@ class Fighter extends Sprite {
         }
         
         this.hasDash = false;
+        this.isDashing = true;
         this.velocity.y = 0;
         this.gravity = 0;
         this.friction = 0.99;
@@ -297,6 +299,10 @@ class Fighter extends Sprite {
             if(this.isAirborne) {
                 this.velocity.x = oldVelocity;
             }
+            if (this.touchingWall) {
+                this.velocity.x = 0;
+            }
+            this.isDashing = false;
         }, 75)
         setTimeout(() => {
             this.hasDash = true;
@@ -576,7 +582,6 @@ class Fighter extends Sprite {
     }
 
     updateHealth() {
-        var fighterHealth = document.getElementById(`${this.name}Health`)
         gsap.to(`#${this.name}Health`, {
             width: `${this.health / this.maxHealth * 100}%`
         })
