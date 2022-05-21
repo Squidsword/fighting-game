@@ -6,7 +6,7 @@ var framesPerSecond = 144;
 
 
 var framesPassed = 0;
-var lastAnimationFrame = new Date();
+var lastFrame = new Date();
 
 canvas.width = 1280;
 canvas.height = Math.round(canvas.width * 9 / 16) * 0.82
@@ -306,10 +306,10 @@ var background = new Sprite({
 })
 
 function animate() {
-    if (framesPassed % 60 === 0) {
-        sixtyFrameTime = (new Date() - lastAnimationFrame) / 1000;
-        lastAnimationFrame = new Date();
-        framesPerSecond = 60 / sixtyFrameTime;
+    if (framesPassed % 10 === 0) {
+        frameTime = (new Date() - lastFrame) / 1000;
+        lastFrame = new Date();
+        framesPerSecond = 10 / frameTime;
         slowFrameFactor = framesPerSecond * 0.1;
         for (fighterSprite in fighters) {
             if (!fighters[fighterSprite].isAttacking) {
