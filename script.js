@@ -17,6 +17,8 @@ const gravity = 0.3;
 const fighters = [];
 const timer = new Date();
 
+// Big thanks to Chris Courses
+
 const player = new Fighter({
     position: {
         x: canvas.width * 0.10,
@@ -329,5 +331,3 @@ function animate() {
 }
 
 animate();
-
-// Big thanks to Chris Courses
