@@ -39,57 +39,8 @@ class Fighter extends Sprite {
         scale = 1, 
         imageSrc,
         framesMax,
-        offset = {x:215, y:180},
-        sprites = {
-            attack1: {
-                imageSrc: `./Martial Hero/Sprites${color}/Attack1.png`,
-                framesMax: 6
-            },
-            attack1Flipped: {
-                imageSrc: `./Martial Hero/Sprites${color}/Attack1 Flipped.png`,
-                framesMax: 6
-            },
-            idle: {
-                imageSrc: `./Martial Hero/Sprites${color}/Idle.png`,
-                framesMax: 8
-            },
-            idleFlipped: {
-                imageSrc: `./Martial Hero/Sprites${color}/Idle Flipped.png`,
-                framesMax: 8
-            },
-            run: {
-                imageSrc: `./Martial Hero/Sprites${color}/Run.png`,
-                framesMax: 8
-            },
-            runFlipped: {
-                imageSrc: `./Martial Hero/Sprites${color}/Run Flipped.png`,
-                framesMax: 8
-            },
-            jump: {
-                imageSrc: `./Martial Hero/Sprites${color}/Jump.png`,
-                framesMax: 2
-            },
-            jumpFlipped: {
-                imageSrc: `./Martial Hero/Sprites${color}/Jump Flipped.png`,
-                framesMax: 2
-            },
-            fall: {
-                imageSrc: `./Martial Hero/Sprites${color}/Fall.png`,
-                framesMax: 2
-            },
-            fallFlipped: {
-                imageSrc: `./Martial Hero/Sprites${color}/Fall Flipped.png`,
-                framesMax: 2
-            },
-            death: {
-                imageSrc: `./Martial Hero/Sprites${color}/Death.png`,
-                framesMax: 6
-            },
-            deathFlipped: {
-                imageSrc: `./Martial Hero/Sprites${color}/Death Flipped.png`,
-                framesMax: 6
-            }
-        }
+        offset = {x:225, y:175},
+        sprites = getSpriteLocation(color)
     }) {
 
         super({
@@ -103,37 +54,39 @@ class Fighter extends Sprite {
         this.position = structuredClone(defaultPosition);
         this.velocity = velocity;
 
-        this.standardizedVelocity = velocity;
+        this.gravity = gravity;
+        this.friction = 0.93;
 
         this.size = size;
         this.color = color;
         this.damagedColor = damagedColor;
-        this.name = name;
 
-        this.isAlive = true;
+        this.name = name;
         this.maxHealth = 250;
         this.health = this.maxHealth;
 
+        this.isAlive = true;
+        this.isAttacking = false;
+        this.isDashing = false;
+        this.knockbacked = false;
+
         this.maxJumps = 2;
+        this.jumps = this.maxJumps;
         this.hasFastFall = true;
         this.hasDash = true;
-        this.jumps = this.maxJumps;
-        this.isAttacking = false;
         this.canAttack = true;
-        this.knockbacked = false;
-        this.enemyLeft = false;
-        this.isDashing = false;
+
+        this.enemiesAreWest = false;
+
 
         this.speed = 3.75;
         this.baseSpeed = 3.75;
+
         this.combo = 0;
         this.comboExpireTimer = null;
         this.speedReductionTimer = null;
 
         this.deathAnimationComplete = false;
-
-        this.gravity = gravity;
-        this.friction = 0.93;
 
         this.facingLeft = false;
 
@@ -163,7 +116,7 @@ class Fighter extends Sprite {
                     y: this.position.y - attackOffset.y
                 },
                 size: {
-                    w: 175,
+                    w: 200,
                     h: 100
                 },
                 enemiesHit: []
@@ -175,7 +128,7 @@ class Fighter extends Sprite {
                     y: attackOffset.y
                 },
                 position: {
-                    x: this.position.x - attackOffset.xf,
+                    x: this.position.x - attackOffset.x,
                     y: this.position.y - attackOffset.y
                 },
                 size: {
@@ -461,7 +414,7 @@ class Fighter extends Sprite {
         if (this.deathAnimationComplete || this.image === this.sprites.deathFlipped.image || this.image === this.sprites.death.image) {
             return;
         }
-        if (this.enemyLeft) {
+        if (this.enemiesAreWest) {
             if (!this.isAlive && this.touchingFloor()) {
                 this.switchSprite(this.sprites.deathFlipped);
                 return;
@@ -524,7 +477,7 @@ class Fighter extends Sprite {
                 rightEnemies++;
             }
         }
-        this.enemyLeft = leftEnemies > rightEnemies;
+        this.enemiesAreWest = leftEnemies > rightEnemies;
     }
 
     updateComboText() {
@@ -580,7 +533,7 @@ class Fighter extends Sprite {
             this.attackBox = this.attackBoxes["middle"];
         }
 
-        if (this.enemyLeft) {
+        if (this.enemiesAreWest) {
             if (!this.attackBox.facingLeft) {
                 this.attackBox.attackOffset.x = (this.attackBox.attackOffset.x * -1) + this.size.w - this.attackBox.size.w;
                 this.attackBox.facingLeft = true;
@@ -643,6 +596,59 @@ function standardizeValue(value) {
 function standardizeMultiplier(value) {
     // Approximation for performance
     return 1 - ((1-value) * 144 / framesPerSecond);
+}
+
+function getSpriteLocation(color) {
+    return {
+        attack1: {
+            imageSrc: `./Martial Hero/Sprites${color}/Attack1.png`,
+            framesMax: 6
+        },
+        attack1Flipped: {
+            imageSrc: `./Martial Hero/Sprites${color}/Attack1 Flipped.png`,
+            framesMax: 6
+        },
+        idle: {
+            imageSrc: `./Martial Hero/Sprites${color}/Idle.png`,
+            framesMax: 8
+        },
+        idleFlipped: {
+            imageSrc: `./Martial Hero/Sprites${color}/Idle Flipped.png`,
+            framesMax: 8
+        },
+        run: {
+            imageSrc: `./Martial Hero/Sprites${color}/Run.png`,
+            framesMax: 8
+        },
+        runFlipped: {
+            imageSrc: `./Martial Hero/Sprites${color}/Run Flipped.png`,
+            framesMax: 8
+        },
+        jump: {
+            imageSrc: `./Martial Hero/Sprites${color}/Jump.png`,
+            framesMax: 2
+        },
+        jumpFlipped: {
+            imageSrc: `./Martial Hero/Sprites${color}/Jump Flipped.png`,
+            framesMax: 2
+        },
+        fall: {
+            imageSrc: `./Martial Hero/Sprites${color}/Fall.png`,
+            framesMax: 2
+        },
+        fallFlipped: {
+            imageSrc: `./Martial Hero/Sprites${color}/Fall Flipped.png`,
+            framesMax: 2
+        },
+        death: {
+            imageSrc: `./Martial Hero/Sprites${color}/Death.png`,
+            framesMax: 6
+        },
+        deathFlipped: {
+            imageSrc: `./Martial Hero/Sprites${color}/Death Flipped.png`,
+            framesMax: 6
+        }
+    }
 }
 
 

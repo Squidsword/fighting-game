@@ -334,6 +334,12 @@ function animate() {
     framesPassed++;
 }
 
+function debugMode(boolean) {
+    for (fighterSprite in fighters) {
+        fighters[fighterSprite].debugMode = boolean;
+    }
+}
+
 function resetGame() {
     fighters = [];
     player = new Fighter(playerData);
