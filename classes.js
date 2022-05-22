@@ -28,7 +28,7 @@ class Sprite {
 
 class Fighter extends Sprite {
     constructor({
-        position = {x:0, y:0}, 
+        defaultPosition = {x:0, y:0},
         velocity = {x:0, y:0}, 
         size = {h: 125, w:50}, 
         color = 'red', 
@@ -99,7 +99,8 @@ class Fighter extends Sprite {
             offset
         })
 
-        this.position = position;
+        this.defaultPosition = defaultPosition;
+        this.position = structuredClone(defaultPosition);
         this.velocity = velocity;
 
         this.standardizedVelocity = velocity;
@@ -388,6 +389,9 @@ class Fighter extends Sprite {
                 } else {
                     if (this.image === this.sprites.death.image || this.image === this.sprites.deathFlipped.image) {
                         this.deathAnimationComplete = true;
+                        setTimeout(() => {
+                            resetGame();
+                        }, 3000)
                     } else {
                         this.framesCurrent = 0;
                     }

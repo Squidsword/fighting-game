@@ -14,13 +14,13 @@ canvas.height = Math.round(canvas.width * 9 / 16) * 0.82
 c.fillRect(0,0, canvas.width, canvas.height)
 
 var gravity = 43.2 / framesPerSecond
-const fighters = [];
+var fighters = [];
 const timer = new Date();
 
 // Big thanks to Chris Courses
 
-const player = new Fighter({
-    position: {
+const playerData = {
+    defaultPosition: {
         x: canvas.width * 0.10,
         y: 200
     },
@@ -54,10 +54,10 @@ const player = new Fighter({
             key: "Shift Left"
         }
     }
-});
+}
 
-const enemy = new Fighter({
-    position: {
+const enemyData = {
+    defaultPosition: {
         x: canvas.width * 0.9 - 75,
         y: 200
     },
@@ -90,7 +90,10 @@ const enemy = new Fighter({
             key: "KeyM"
         }
     }
-})
+}
+
+var player = new Fighter(playerData);
+var enemy = new Fighter(enemyData);
 
 function checkCollision(object1, object2) {
     var horizontalCollision = object1.position.x + object1.size.w > object2.position.x &&
@@ -302,7 +305,7 @@ function resetJustPressed() {
 }
 
 var background = new Sprite({
-    imageSrc: './Martial Hero/Sprites/background.jpg',
+    imageSrc: 'background.jpg',
     scale: canvas.width / 1920
 })
 
@@ -329,6 +332,14 @@ function animate() {
 
     resetJustPressed();
     framesPassed++;
+}
+
+function resetGame() {
+    fighters = [];
+    player = new Fighter(playerData);
+    enemy = new Fighter(enemyData);
+    player.updateHealth(player.health);
+    enemy.updateHealth(enemy.health);
 }
 
 animate();
