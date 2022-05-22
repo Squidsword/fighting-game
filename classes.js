@@ -31,7 +31,7 @@ class Fighter extends Sprite {
         defaultPosition = {x:0, y:0},
         velocity = {x:0, y:0}, 
         size = {h: 125, w:50}, 
-        color = 'red', 
+        color = 'Red', 
         damagedColor = 'white', 
         name = 'anonymous', 
         attackOffset = {x: 30, y:10}, 
@@ -42,51 +42,51 @@ class Fighter extends Sprite {
         offset = {x:215, y:180},
         sprites = {
             attack1: {
-                imageSrc: './Martial Hero/Sprites/Attack1.png',
+                imageSrc: `./Martial Hero/Sprites${color}/Attack1.png`,
                 framesMax: 6
             },
             attack1Flipped: {
-                imageSrc: './Martial Hero/Sprites/Attack1 Flipped.png',
+                imageSrc: `./Martial Hero/Sprites${color}/Attack1 Flipped.png`,
                 framesMax: 6
             },
             idle: {
-                imageSrc: './Martial Hero/Sprites/Idle.png',
+                imageSrc: `./Martial Hero/Sprites${color}/Idle.png`,
                 framesMax: 8
             },
             idleFlipped: {
-                imageSrc: './Martial Hero/Sprites/Idle Flipped.png',
+                imageSrc: `./Martial Hero/Sprites${color}/Idle Flipped.png`,
                 framesMax: 8
             },
             run: {
-                imageSrc: './Martial Hero/Sprites/Run.png',
+                imageSrc: `./Martial Hero/Sprites${color}/Run.png`,
                 framesMax: 8
             },
             runFlipped: {
-                imageSrc: './Martial Hero/Sprites/Run Flipped.png',
+                imageSrc: `./Martial Hero/Sprites${color}/Run Flipped.png`,
                 framesMax: 8
             },
             jump: {
-                imageSrc: './Martial Hero/Sprites/Jump.png',
+                imageSrc: `./Martial Hero/Sprites${color}/Jump.png`,
                 framesMax: 2
             },
             jumpFlipped: {
-                imageSrc: './Martial Hero/Sprites/Jump Flipped.png',
+                imageSrc: `./Martial Hero/Sprites${color}/Jump Flipped.png`,
                 framesMax: 2
             },
             fall: {
-                imageSrc: './Martial Hero/Sprites/Fall.png',
+                imageSrc: `./Martial Hero/Sprites${color}/Fall.png`,
                 framesMax: 2
             },
             fallFlipped: {
-                imageSrc: './Martial Hero/Sprites/Fall Flipped.png',
+                imageSrc: `./Martial Hero/Sprites${color}/Fall Flipped.png`,
                 framesMax: 2
             },
             death: {
-                imageSrc: './Martial Hero/Sprites/Death.png',
+                imageSrc: `./Martial Hero/Sprites${color}/Death.png`,
                 framesMax: 6
             },
             deathFlipped: {
-                imageSrc: './Martial Hero/Sprites/Death Flipped.png',
+                imageSrc: `./Martial Hero/Sprites${color}/Death Flipped.png`,
                 framesMax: 6
             }
         }
@@ -391,7 +391,7 @@ class Fighter extends Sprite {
                         this.deathAnimationComplete = true;
                         setTimeout(() => {
                             resetGame();
-                        }, 3000)
+                        }, 2000)
                     } else {
                         this.framesCurrent = 0;
                     }

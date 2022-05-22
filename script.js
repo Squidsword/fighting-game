@@ -11,7 +11,12 @@ var lastFrame = new Date();
 canvas.width = 1280;
 canvas.height = Math.round(canvas.width * 9 / 16) * 0.82
 
-c.fillRect(0,0, canvas.width, canvas.height)
+var background = new Sprite({
+    imageSrc: 'background.jpg',
+    scale: canvas.width / 1920
+})
+
+background.update();
 
 var gravity = 43.2 / framesPerSecond
 var fighters = [];
@@ -29,7 +34,7 @@ const playerData = {
         y: 0,
         topSpeed: 10
     },
-    color:'blue',
+    color:'Blue',
     name: 'player',
     imageSrc: './Martial Hero/Sprites/Idle.png',
     framesMax: 8,
@@ -65,7 +70,7 @@ const enemyData = {
         x: 0,
         y: 0
     },
-    color:'red',
+    color:'Red',
     name: 'enemy',
     imageSrc: './Martial Hero/Sprites/Idle.png',
     framesMax: 8,
@@ -303,11 +308,6 @@ function resetJustPressed() {
         keys[property]['justPressed'] = false;
     }
 }
-
-var background = new Sprite({
-    imageSrc: 'background.jpg',
-    scale: canvas.width / 1920
-})
 
 function animate() {
     if (framesPassed % 10 === 0) {
