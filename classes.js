@@ -257,7 +257,7 @@ class Fighter extends Sprite {
             if(this.isAirborne) {
                 this.velocity.x = oldVelocity;
             }
-            if (this.touchingWall) {
+            if (this.touchingWall()) {
                 this.velocity.x = 0;
             }
             this.isDashing = false;
