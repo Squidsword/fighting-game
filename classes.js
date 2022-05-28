@@ -68,6 +68,7 @@ class Fighter extends Sprite {
         this.isAlive = true;
         this.isAttacking = false;
         this.isDashing = false;
+        this.airborneDashed = false;
         this.knockbacked = false;
 
         this.maxJumps = 2;
@@ -251,14 +252,14 @@ class Fighter extends Sprite {
         this.velocity.y = 0;
         this.gravity = 0;
         this.friction = standardizeMultiplier(0.99);
+        if(this.isAirborne()) {
+            this.airborneDashed = true;
+        }
         setTimeout(() => {
             this.gravity = gravity;
             this.friction = standardizeMultiplier(0.93);
-            if(this.isAirborne) {
+            if(this.isAirborne()) {
                 this.velocity.x = oldVelocity;
-            }
-            if (this.touchingWall()) {
-                this.velocity.x = 0;
             }
             this.isDashing = false;
         }, 75)
@@ -353,21 +354,35 @@ class Fighter extends Sprite {
         }
         if (this.position.x + this.velocity.x < 0) {
             this.position.x = 0
-            this.velocity.x = -0.75 * this.velocity.x;
+            if (this.airborneDashed) {
+                this.velocity.x = 0
+                this.updateVelocityText();
+                this.airborneDashed = false;
+            } else {
+                this.velocity.x = -0.75 * this.velocity.x;
+            }
         } else if (this.position.x + this.velocity.x + this.size.w > canvas.width) {
             this.position.x = canvas.width - this.size.w;
-            this.velocity.x = -0.75 * this.velocity.x;
+            if (this.airborneDashed) {
+                this.velocity.x = 0
+                this.updateVelocityText();
+                this.airborneDashed = false;
+            } else {
+                this.velocity.x = -0.75 * this.velocity.x;
+            }
         } else {
             this.position.x += standardizeValue(this.velocity.x);
             this.updateVelocityText();
-            if (this.touchingFloor()) {
-                this.velocity.x *= standardizeMultiplier(this.friction);
-                this.jumps = this.maxJumps;
-                this.hasFastFall = true;
-                this.knockbacked = false;
-            } else {
-                this.velocity.x *= standardizeMultiplier(0.998);
-            }
+        }
+
+        if (this.touchingFloor()) {
+            this.velocity.x *= standardizeMultiplier(this.friction);
+            this.jumps = this.maxJumps;
+            this.hasFastFall = true;
+            this.knockbacked = false;
+            this.airborneDashed = false;
+        } else {
+            this.velocity.x *= standardizeMultiplier(0.998);
         }
 
         gravity = standardizeValue(0.3);
