@@ -317,7 +317,7 @@ class Fighter extends Sprite {
             this.die()
         }
         this.stunned = true;
-        clearTimeout(this.stunTimer);
+        clearTimeout(this.stunnedTimer);
         this.stunnedTimer = setTimeout(() => {
             this.stunned = false;
         }, 350)
