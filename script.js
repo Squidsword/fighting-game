@@ -71,7 +71,6 @@ const enemyData = {
     },
     color:'Red',
     name: 'enemy',
-    imageSrc: './Martial Hero/Sprites/Idle.png',
     framesMax: 8,
     scale: 2.5,
     keyMap: {

@@ -70,6 +70,7 @@ class Fighter extends Sprite {
         this.isDashing = false;
         this.airborneDashed = false;
         this.knockbacked = false;
+        this.stunned = false;
 
         this.maxJumps = 2;
         this.jumps = this.maxJumps;
@@ -86,6 +87,7 @@ class Fighter extends Sprite {
         this.combo = 0;
         this.comboExpireTimer = null;
         this.speedReductionTimer = null;
+        this.stunnedTimer = null;
 
         this.deathAnimationComplete = false;
 
@@ -202,8 +204,15 @@ class Fighter extends Sprite {
 
     jump() {
         if (this.touchingWall() && !this.touchingFloor()) {
+            if (this.velocity.x == 0) {
+                this.updateEnemiesLeft();
+                this.velocity.x = this.baseSpeed * this.enemiesAreWest ? -1 : 1;
+            }
             this.velocity.x *= 2.5;
             this.velocity.y = -8;
+            this.stunned = false;
+        } else if (!this.canRecover()) {
+            return;
         } else if (this.jumps > 0 && this.isAirborne()) {
             this.knockbacked = false;
             this.velocity.y = -10;
@@ -221,6 +230,9 @@ class Fighter extends Sprite {
     }
 
     fastFall() {
+        if (!this.hasControl()) {
+            return;
+        }
         if (this.hasFastFall && this.isAlive) {
             this.velocity.y = Math.max(10, this.velocity.y += 10);
             this.hasFastFall = false;
@@ -232,6 +244,11 @@ class Fighter extends Sprite {
         if (!this.hasDash) {
             return;
         }
+
+        if (!this.canRecover()) {
+            return;
+        }
+
         var oldVelocity = this.velocity.x;
         if (this.velocity.x < 0) {
             this.velocity.x -= 5;
@@ -299,14 +316,19 @@ class Fighter extends Sprite {
             this.health = 0
             this.die()
         }
+        this.stunned = true;
+        clearTimeout(this.stunTimer);
+        this.stunnedTimer = setTimeout(() => {
+            this.stunned = false;
+        }, 250)
     }
 
     hasControl() {
-        return this.isAlive && !this.knockbacked && Math.abs(this.velocity.x) <= this.speed;
+        return this.isAlive && Math.abs(this.velocity.x) <= this.speed;
     }
 
-    hasMovementControl() {
-        return this.hasControl();
+    canRecover() {
+        return this.hasControl() && !this.stunned;
     }
 
     touchingFloor() {
@@ -381,6 +403,8 @@ class Fighter extends Sprite {
             this.hasFastFall = true;
             this.knockbacked = false;
             this.airborneDashed = false;
+            this.stunned = false;
+            clearTimeout(this.stunnedTimer)
         } else {
             this.velocity.x *= standardizeMultiplier(0.998);
         }
