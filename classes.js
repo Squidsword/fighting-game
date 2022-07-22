@@ -320,7 +320,7 @@ class Fighter extends Sprite {
         clearTimeout(this.stunTimer);
         this.stunnedTimer = setTimeout(() => {
             this.stunned = false;
-        }, 250)
+        }, 350)
     }
 
     hasControl() {
@@ -328,7 +328,7 @@ class Fighter extends Sprite {
     }
 
     canRecover() {
-        return this.hasControl() && !this.stunned;
+        return this.isAlive && !this.stunned;
     }
 
     touchingFloor() {
