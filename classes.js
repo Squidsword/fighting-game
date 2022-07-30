@@ -558,8 +558,8 @@ class Fighter extends Sprite {
 
     updateSpeedText() {
         try {
-            var speed = document.getElementById(`${this.name}Speed`);
-            speed.textContent = `Run Speed: ${this.speed.toFixed(2)}`;
+            //var speed = document.getElementById(`${this.name}Speed`);
+            //speed.textContent = `Run Speed: ${this.speed.toFixed(2)}`;
         } catch {
             console.log("speedtext not found");
         }
