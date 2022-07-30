@@ -237,7 +237,7 @@ class Fighter extends Sprite {
     }
 
     fastFall() {
-        if (!this.hasControl()) {
+        if (!this.canRecover()) {
             return;
         }
         if (this.hasFastFall && this.isAlive) {
