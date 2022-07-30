@@ -326,11 +326,19 @@ class Fighter extends Sprite {
         clearTimeout(this.stunnedTimer);
         this.stunnedTimer = setTimeout(() => {
             this.stunned = false;
-        }, source.stunDuration)
+        }, source.getStunDuration())
     }
 
     hasControl() {
         return this.isAlive && Math.abs(this.velocity.x) <= this.speed;
+    }
+
+    getStunDuration() {
+        if (Math.abs(this.velocity.x + this.velocity.y) > 0.1) {
+            return this.stunDuration
+        } else {
+            return this.stunDuration / 2
+        }
     }
 
     canRecover() {
@@ -373,7 +381,7 @@ class Fighter extends Sprite {
         this.trueComboExpireTimer = setTimeout(() => {
             this.trueCombo = 0;
             this.updateTrueComboText()
-        }, this.stunDuration);
+        }, this.getStunDuration());
     }
 
     update() {
