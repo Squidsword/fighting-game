@@ -312,7 +312,7 @@ function animate() {
     if (framesPassed % 10 === 0) {
         frameTime = (new Date() - lastFrame) / 1000;
         lastFrame = new Date();
-        Math.min(144, framesPerSecond = 10 / frameTime);
+        framesPerSecond = Math.min(240, 10 / frameTime);
         slowFrameFactor = framesPerSecond * 0.1;
         for (fighterSprite in fighters) {
             if (!fighters[fighterSprite].isAttacking) {
