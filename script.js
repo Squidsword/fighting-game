@@ -22,8 +22,6 @@ var gravity = 43.2 / framesPerSecond
 var fighters = [];
 const timer = new Date();
 
-// Big thanks to Chris Courses
-
 const playerData = {
     defaultPosition: {
         x: canvas.width * 0.10,

@@ -62,7 +62,7 @@ class Fighter extends Sprite {
         this.damagedColor = damagedColor;
 
         this.name = name;
-        this.maxHealth = 250;
+        this.maxHealth = 300
         this.health = this.maxHealth;
         this.baseStunDuration = 300;
         this.stunDuration = this.baseStunDuration;
@@ -86,14 +86,14 @@ class Fighter extends Sprite {
         this.speed = 3.75;
         this.baseSpeed = 3.75;
 
-        this.combo = 0;
-        this.comboExpireTimer = null;
+        this.flow = 0;
+        this.flowExpireTimer = null;
         this.trueComboExpireTimer = null;
         this.trueCombo = 0;
         this.maxTrueCombo = 0;
         this.speedReductionTimer = null;
         this.stunnedTimer = null;
-        this.comboWindow = 1000
+        this.flowWindow = 2000
 
         this.deathAnimationComplete = false;
 
@@ -182,7 +182,7 @@ class Fighter extends Sprite {
             if (this.attackBox.enemiesHit.length > 0) {
                 clearTimeout(id);
                 this.canAttack = true;
-                this.incrementCombo();
+                this.incrementFlow();
             } else {
                 this.resetCombo();
                 setTimeout(() => {
@@ -307,6 +307,7 @@ class Fighter extends Sprite {
         this.position.y -= 1;
         this.velocity.y = -8 + 0.382*source.velocity.y;
         var direction;
+        this.resetCombo()
         if (source.position.x > this.position.x) {
             direction = -1
         } else {
@@ -334,10 +335,14 @@ class Fighter extends Sprite {
     }
 
     getStunDuration() {
-        if (Math.abs(this.velocity.x + this.velocity.y) > 0.1) {
-            return this.stunDuration
-        } else {
+        if (Math.abs(this.velocity.x + this.velocity.y) < 0.1) {
             return this.stunDuration / 2
+        }
+
+        if(!this.touchingFloor()) {
+            return this.stunDuration * 1.3
+        } else {
+            return this.stunDuration
         }
     }
 
@@ -357,19 +362,19 @@ class Fighter extends Sprite {
         return !this.touchingFloor() && !this.touchingWall()
     }
 
-    incrementCombo() {
+    incrementFlow() {
         clearInterval(this.speedReductionTimer);
-        clearTimeout(this.comboExpireTimer);
-        this.combo++;
-        this.speed = this.baseSpeed + Math.pow(this.combo * 0.5, 0.8);
-        this.stunDuration = Math.min(this.baseStunDuration + this.combo * 20, this.comboWindow)
+        clearTimeout(this.flowExpireTimer);
+        this.flow++;
+        this.speed = this.baseSpeed + Math.pow(this.flow * 0.5, 0.75);
+        this.stunDuration = Math.min(this.baseStunDuration + this.flow * 10, this.flowWindow)
         this.updateComboText();
         this.updateSpeedText();
         this.incrementTrueCombo();
         console.log(`${this.name} speed: ${this.speed}`)
-        this.comboExpireTimer = setTimeout(() => {
+        this.flowExpireTimer = setTimeout(() => {
             this.resetCombo();
-        }, Math.abs(this.velocity.x + this.velocity.y) < 0.1 ? this.comboWindow / 4 : this.comboWindow);
+        }, Math.abs(this.velocity.x + this.velocity.y) < 0.1 ? this.flowWindow / 4 : this.flowWindow);
     }
 
     incrementTrueCombo() {
@@ -478,6 +483,7 @@ class Fighter extends Sprite {
 
 
     updateSprite() {
+        // Big thanks to Chris Courses
         if (this.deathAnimationComplete || this.image === this.sprites.deathFlipped.image || this.image === this.sprites.death.image) {
             return;
         }
@@ -550,7 +556,7 @@ class Fighter extends Sprite {
     updateComboText() {
         try {
             var combo = document.getElementById(`${this.name}Flow`);
-            combo.textContent = `Flow: ${this.combo}`;
+            combo.textContent = `Flow: ${this.flow}`;
         } catch {
             console.log("combotext not found");
         }
@@ -587,8 +593,8 @@ class Fighter extends Sprite {
 
     resetCombo() {
         console.log(`${this.name} combo resetting...`)
-        clearTimeout(this.comboExpireTimer);
-        this.combo = 0;
+        clearTimeout(this.flowExpireTimer);
+        this.flow = 0;
         this.stunDuration = this.baseStunDuration
         this.trueCombo = 0;
         this.updateComboText();
