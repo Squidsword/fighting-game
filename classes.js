@@ -64,6 +64,8 @@ class Fighter extends Sprite {
         this.name = name;
         this.maxHealth = 250;
         this.health = this.maxHealth;
+        this.baseStunDuration = 300;
+        this.stunDuration = this.baseStunDuration;
 
         this.isAlive = true;
         this.isAttacking = false;
@@ -86,8 +88,12 @@ class Fighter extends Sprite {
 
         this.combo = 0;
         this.comboExpireTimer = null;
+        this.trueComboExpireTimer = null;
+        this.trueCombo = 0;
+        this.maxTrueCombo = 0;
         this.speedReductionTimer = null;
         this.stunnedTimer = null;
+        this.comboWindow = 1000
 
         this.deathAnimationComplete = false;
 
@@ -195,6 +201,7 @@ class Fighter extends Sprite {
         this.facingLeft = true;
     }
 
+    
     moveRight() {
         if (this.hasControl()) {
             this.velocity.x = this.speed;
@@ -296,7 +303,6 @@ class Fighter extends Sprite {
         if (!this.isAlive) {
             return;
         }
-        this.health -= damage;
         this.knockbacked = true;
         this.position.y -= 1;
         this.velocity.y = -8 + 0.382*source.velocity.y;
@@ -311,16 +317,16 @@ class Fighter extends Sprite {
         } else {
             this.velocity.x += direction*3;
         }
-        this.updateHealth();
+        this.updateHealth(this.health - damage);
         if (this.health <= 0) {
-            this.health = 0
+            this.updateHealth(0)
             this.die()
         }
         this.stunned = true;
         clearTimeout(this.stunnedTimer);
         this.stunnedTimer = setTimeout(() => {
             this.stunned = false;
-        }, 350)
+        }, source.stunDuration)
     }
 
     hasControl() {
@@ -348,12 +354,26 @@ class Fighter extends Sprite {
         clearTimeout(this.comboExpireTimer);
         this.combo++;
         this.speed = this.baseSpeed + Math.pow(this.combo * 0.5, 0.8);
+        this.stunDuration = Math.min(this.baseStunDuration + this.combo * 20, this.comboWindow)
         this.updateComboText();
         this.updateSpeedText();
+        this.incrementTrueCombo();
         console.log(`${this.name} speed: ${this.speed}`)
         this.comboExpireTimer = setTimeout(() => {
             this.resetCombo();
-        }, 1000);
+        }, Math.abs(this.velocity.x + this.velocity.y) < 0.1 ? this.comboWindow / 4 : this.comboWindow);
+    }
+
+    incrementTrueCombo() {
+        clearTimeout(this.trueComboExpireTimer);
+        this.trueCombo++
+        this.maxTrueCombo = Math.max(this.trueCombo, this.maxTrueCombo)
+        this.updateTrueComboText()
+        console.log(`${this.name} speed: ${this.speed}`)
+        this.trueComboExpireTimer = setTimeout(() => {
+            this.trueCombo = 0;
+            this.updateTrueComboText()
+        }, this.stunDuration);
     }
 
     update() {
@@ -533,7 +553,7 @@ class Fighter extends Sprite {
             var speed = document.getElementById(`${this.name}Speed`);
             speed.textContent = `Run Speed: ${this.speed.toFixed(2)}`;
         } catch {
-            console.log("combotext not found");
+            console.log("speedtext not found");
         }
     }
 
@@ -542,7 +562,18 @@ class Fighter extends Sprite {
             var velocity = document.getElementById(`${this.name}Velocity`);
             velocity.textContent = `Velocity: ${Math.abs(this.velocity.x.toFixed(2))}`;
         } catch {
-            console.log("combotext not found");
+            console.log("velocitytext not found");
+        }
+    }
+
+    updateTrueComboText() {
+        try {
+            var trueCombo = document.getElementById(`${this.name}Combo`);
+            var maxTrueCombo = document.getElementById(`${this.name}MaxCombo`);
+            trueCombo.textContent = `True Combo: ${Math.abs(this.trueCombo.toFixed(2))}`;
+            maxTrueCombo.textContent = `Max Combo: ${Math.abs(this.maxTrueCombo.toFixed(2))}`;
+        } catch {
+            console.log("truecombotext not found");
         }
     }
 
@@ -550,7 +581,10 @@ class Fighter extends Sprite {
         console.log(`${this.name} combo resetting...`)
         clearTimeout(this.comboExpireTimer);
         this.combo = 0;
+        this.stunDuration = this.baseStunDuration
+        this.trueCombo = 0;
         this.updateComboText();
+        this.updateTrueComboText();
         this.speedReductionTimer = setInterval(() => {
             if (this.speed * 0.9 < this.baseSpeed) {
                 this.speed = this.baseSpeed;
@@ -585,7 +619,8 @@ class Fighter extends Sprite {
         }
     }
 
-    updateHealth() {
+    updateHealth(newHealth) {
+        this.health = newHealth
         gsap.to(`#${this.name}Health`, {
             width: `${this.health / this.maxHealth * 100}%`
         })

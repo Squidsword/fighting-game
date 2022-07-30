@@ -148,11 +148,12 @@ function handleHits() {
         var hitEnemies = checkHits(fighters[user]);
         for (enemyFighter in hitEnemies) {
             if (!fighters[user].attackBox.enemiesHit.includes(hitEnemies[enemyFighter])) {
-                hitEnemies[enemyFighter].receiveDamage(10, fighters[user])
-                fighters[user].attackBox.enemiesHit.push(hitEnemies[enemyFighter])
-                console.log(hitEnemies[enemyFighter].name + " was hit")
+                if (hitEnemies[enemyFighter].health > 0) {
+                    hitEnemies[enemyFighter].receiveDamage(10, fighters[user])
+                    fighters[user].attackBox.enemiesHit.push(hitEnemies[enemyFighter])
+                    console.log(hitEnemies[enemyFighter].name + " was hit")
+                }
             }
-            
         }
     }
 }
@@ -311,7 +312,7 @@ function animate() {
     if (framesPassed % 10 === 0) {
         frameTime = (new Date() - lastFrame) / 1000;
         lastFrame = new Date();
-        framesPerSecond = 10 / frameTime;
+        Math.min(144, framesPerSecond = 10 / frameTime);
         slowFrameFactor = framesPerSecond * 0.1;
         for (fighterSprite in fighters) {
             if (!fighters[fighterSprite].isAttacking) {
