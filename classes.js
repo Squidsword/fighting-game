@@ -210,7 +210,8 @@ class Fighter extends Sprite {
     }
 
     jump() {
-        if (this.touchingWall() && !this.touchingFloor()) {
+        
+        if (this.touchingWall() && !this.touchingFloor()) { // Edge case for when player is gliding on wall
             if (this.velocity.x == 0) {
                 this.updateEnemiesLeft();
                 this.velocity.x = this.baseSpeed * this.enemiesAreWest ? -1 : 1;
@@ -220,13 +221,30 @@ class Fighter extends Sprite {
             this.stunned = false;
         } else if (!this.canRecover()) {
             return;
-        } else if (this.jumps > 0 && this.isAirborne()) {
-            this.knockbacked = false;
-            this.velocity.y = -10;
-            this.jumps = 0;
-        } else if (this.jumps > 0 && this.hasControl()) {
+        } else if (this.jumps > 0) {
             this.velocity.y = -10;
             this.jumps--;
+            if (!this.touchingWall()) {
+                var oldVelocity = this.velocity.x
+                this.velocity.x = Math.abs(this.velocity.x)
+                if (this.facingLeft) {
+                    if (oldVelocity < 0) {
+                        this.velocity.x *= -1
+                    } else {
+                        this.velocity.x *= -0.65
+                    }
+                } else {
+                    if (oldVelocity > 0) {
+                        this.velocity.x *= 1
+                    } else {
+                        this.velocity.x *= 0.65
+                    }
+                }
+            }
+            if (this.isAirborne()) {
+                this.knockbacked = false;
+                this.jumps = 0;
+            }
         }
     }   
 
