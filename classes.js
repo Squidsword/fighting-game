@@ -216,7 +216,7 @@ class Fighter extends Sprite {
                 this.updateEnemiesLeft();
                 this.velocity.x = this.baseSpeed * this.enemiesAreWest ? -1 : 1;
             }
-            this.velocity.x *= 2.5;
+            this.velocity.x = Math.sign(this.velocity.x) * Math.pow(Math.abs(this.velocity.x), 0.85) * 2.85
             this.velocity.y = -8;
             this.stunned = false;
         } else if (!this.canRecover()) {
@@ -231,13 +231,13 @@ class Fighter extends Sprite {
                     if (oldVelocity < 0) {
                         this.velocity.x *= -1
                     } else {
-                        this.velocity.x *= -0.65
+                        this.velocity.x = Math.pow(this.velocity.x, 0.75) * -0.8
                     }
                 } else {
                     if (oldVelocity > 0) {
                         this.velocity.x *= 1
                     } else {
-                        this.velocity.x *= 0.65
+                        this.velocity.x = Math.pow(this.velocity.x, 0.75) * 0.8
                     }
                 }
             }
