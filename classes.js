@@ -385,7 +385,7 @@ class Fighter extends Sprite {
         clearTimeout(this.flowExpireTimer);
         this.flow++;
         this.speed = this.baseSpeed + Math.pow(this.flow * 0.5, 0.75);
-        this.stunDuration = Math.min(this.baseStunDuration + this.flow * 10, this.flowWindow)
+        this.stunDuration = Math.min(this.baseStunDuration + this.flow * 8, this.flowWindow)
         this.updateComboText();
         this.updateSpeedText();
         this.incrementTrueCombo();
